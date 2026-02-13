@@ -14,7 +14,7 @@ export default function Navbar() {
                             Voting Platform
                         </Link>
                         <div className="hidden md:flex ml-10 space-x-8">
-                            <Link href="/" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md font-medium">
+                            <Link href="/leaderboard" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md font-medium">
                                 Leaderboard
                             </Link>
                         </div>

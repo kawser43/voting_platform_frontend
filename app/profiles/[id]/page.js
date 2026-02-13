@@ -103,6 +103,7 @@ export default function PublicProfilePage() {
                                     )}
                                 </div>
                             </div>
+                            
                             <div>
                                 <button 
                                     onClick={handleVote}

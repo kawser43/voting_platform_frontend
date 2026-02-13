@@ -6,13 +6,16 @@ const appConfig = Object.freeze({
     api_base_url: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8008/',
     authPaths: [
         '/forget-password',
-        '/login',
-        '/register',
+        '/auth/login',
+        '/auth/register',
         '/registration-success',
         '/reset-password',
         '/verify-email'
     ],
     guestPaths: [
+        '/',
+        '/leaderboard',
+        '/profiles',
         '/why-join-us',
         '/contents',
     ],

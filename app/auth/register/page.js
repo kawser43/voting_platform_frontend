@@ -23,8 +23,12 @@ export default function RegisterPage() {
         setError(null);
         try {
             const { data } = await Axios.post('/register', formData);
-            loginUser(data.user, data.access_token);
-            router.push('/dashboard');
+            if (data.status) {
+                loginUser(data.data.user, data.data.access_token);
+                router.push('/dashboard');
+            } else {
+                setError(data.message || 'Registration failed');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
         } finally {

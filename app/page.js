@@ -2,6 +2,11 @@
 import Axios from '@/Helper/Axios';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 export default function Home() {
     const [profiles, setProfiles] = useState([]);
@@ -9,6 +14,10 @@ export default function Home() {
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [judges, setJudges] = useState([]);
+    const [loadingJudges, setLoadingJudges] = useState(true);
+    const [partners, setPartners] = useState([]);
+    const [loadingPartners, setLoadingPartners] = useState(true);
 
     const fetchProfiles = async (pageNumber = 1, searchQuery = '') => {
         setLoading(true);
@@ -16,9 +25,9 @@ export default function Home() {
             const query = new URLSearchParams({ page: pageNumber, search: searchQuery }).toString();
             const { data } = await Axios.get(`/profiles?${query}`);
             if (data.status) {
-                setProfiles(data.data.data);
-                setLastPage(data.data.last_page);
-                setPage(data.data.current_page);
+                setProfiles(data.data.profiles.data);
+                setLastPage(data.data.profiles.last_page);
+                setPage(data.data.profiles.current_page);
             }
         } catch (err) {
             console.error("Error fetching profiles", err);
@@ -27,8 +36,36 @@ export default function Home() {
         }
     };
 
+    const fetchJudges = async () => {
+        try {
+            const { data } = await Axios.get('/judges');
+            if (data.status) {
+                setJudges(data.data);
+            }
+        } catch (err) {
+            console.error("Error fetching judges", err);
+        } finally {
+            setLoadingJudges(false);
+        }
+    };
+
+    const fetchPartners = async () => {
+        try {
+            const { data } = await Axios.get('/partners');
+            if (data.status) {
+                setPartners(data.data);
+            }
+        } catch (err) {
+            console.error("Error fetching partners", err);
+        } finally {
+            setLoadingPartners(false);
+        }
+    };
+
     useEffect(() => {
         fetchProfiles();
+        fetchJudges();
+        fetchPartners();
     }, []);
 
     const handleSearch = (e) => {
@@ -46,6 +83,89 @@ export default function Home() {
                     Discover and support amazing organizations. Your vote counts!
                 </p>
             </div>
+
+            {/* Judges Section */}
+            {!loadingJudges && judges.length > 0 && (
+                <div className="mb-16">
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Meet Our Judges</h2>
+                    <Swiper
+                        modules={[Navigation, Autoplay]}
+                        spaceBetween={30}
+                        slidesPerView={1}
+                        breakpoints={{
+                            640: { slidesPerView: 2 },
+                            1024: { slidesPerView: 4 },
+                        }}
+                        centerInsufficientSlides={true}
+                        autoplay={{ delay: 3000, disableOnInteraction: false }}
+                        navigation
+                        className="judges-swiper px-4"
+                    >
+                        {judges.map((judge) => (
+                            <SwiperSlide key={judge.id}>
+                                <div className="text-center py-4">
+                                    <div className="relative w-32 h-32 mx-auto mb-4">
+                                        {judge.profile_picture ? (
+                                            <img 
+                                                src={judge.profile_picture} 
+                                                alt={judge.name} 
+                                                className="rounded-full object-cover w-full h-full border-4 border-indigo-100"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center border-4 border-indigo-100">
+                                                <span className="text-gray-400 text-2xl">?</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900">{judge.name}</h3>
+                                    <p className="text-indigo-600 font-medium">{judge.designation}</p>
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+                </div>
+            )}
+
+            {/* Partners Section */}
+            {!loadingPartners && partners.length > 0 && (
+                <div className="mb-16">
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Our Partners</h2>
+                    <Swiper
+                        modules={[Navigation, Autoplay]}
+                        spaceBetween={30}
+                        slidesPerView={2}
+                        breakpoints={{
+                            640: { slidesPerView: 3 },
+                            1024: { slidesPerView: 5 },
+                        }}
+                        centerInsufficientSlides={true}
+                        autoplay={{ delay: 2500, disableOnInteraction: false }}
+                        navigation
+                        className="partners-swiper px-4"
+                    >
+                        {partners.map((partner) => (
+                            <SwiperSlide key={partner.id}>
+                                <div className="text-center group py-4">
+                                    <div className="relative w-24 h-24 mx-auto mb-2 transition-transform transform group-hover:scale-110 flex items-center justify-center">
+                                        {partner.logo ? (
+                                            <img 
+                                                src={partner.logo} 
+                                                alt={partner.name} 
+                                                className="object-contain w-full h-full"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+                                                <span className="text-gray-400 text-xl font-bold">{partner.name[0]}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <h3 className="text-md font-medium text-gray-700">{partner.name}</h3>
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+                </div>
+            )}
 
             {/* Search Bar */}
             <div className="max-w-xl mx-auto mb-12">
@@ -95,7 +215,7 @@ export default function Home() {
                                 <p className="text-gray-600 mb-4 line-clamp-3 flex-1">{profile.summary}</p>
                                 <div className="mt-auto">
                                     <Link 
-                                        href={`/profile/${profile.id}`}
+                                        href={`/profiles/${profile.id}`}
                                         className="block w-full text-center bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 font-medium transition-colors"
                                     >
                                         View Profile

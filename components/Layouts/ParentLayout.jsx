@@ -1,8 +1,16 @@
 'use client'
 import React from 'react'
 import Navbar from '../Navbar'
+import { usePathname } from 'next/navigation'
 
 export default function ParentLayout({ children }) {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin');
+
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />

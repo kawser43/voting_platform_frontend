@@ -3,6 +3,7 @@ import Axios from '@/Helper/Axios';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 export default function AdminDashboard() {
     const { user, isLoggedIn } = useUser();
@@ -12,6 +13,13 @@ export default function AdminDashboard() {
     const [statusFilter, setStatusFilter] = useState('pending');
     const [actionLoading, setActionLoading] = useState(null); // id of profile being processed
     const [rejectModal, setRejectModal] = useState({ open: false, id: null, reason: '' });
+    const [confirmModal, setConfirmModal] = useState({ 
+        open: false, 
+        title: '', 
+        message: '', 
+        onConfirm: () => {},
+        confirmColor: 'indigo' 
+    });
     const [editModal, setEditModal] = useState({ 
         open: false, 
         id: null, 
@@ -67,21 +75,28 @@ export default function AdminDashboard() {
         }
     }, [statusFilter, user]);
 
-    const handleApprove = async (id) => {
-        if (!confirm('Are you sure you want to approve this profile?')) return;
-        
-        setActionLoading(id);
-        try {
-            const { data } = await Axios.post(`/admin/profiles/${id}/approve`);
-            if (data.status) {
-                fetchProfiles(); // Refresh list
+    const handleApprove = (id) => {
+        setConfirmModal({
+            open: true,
+            title: 'Approve Profile',
+            message: 'Are you sure you want to approve this profile? It will be visible on the leaderboard.',
+            confirmColor: 'green',
+            onConfirm: async () => {
+                setActionLoading(id);
+                try {
+                    const { data } = await Axios.post(`/admin/profiles/${id}/approve`);
+                    if (data.status) {
+                        fetchProfiles(); // Refresh list
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to approve profile');
+                } finally {
+                    setActionLoading(null);
+                    setConfirmModal(prev => ({ ...prev, open: false }));
+                }
             }
-        } catch (err) {
-            console.error(err);
-            alert('Failed to approve profile');
-        } finally {
-            setActionLoading(null);
-        }
+        });
     };
 
     const handleReject = async () => {
@@ -120,20 +135,28 @@ export default function AdminDashboard() {
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
-        setActionLoading(editModal.id);
-        try {
-            const { data } = await Axios.post(`/admin/profiles/${editModal.id}/update`, editModal.data);
-            if (data.status) {
-                setEditModal({ ...editModal, open: false });
-                fetchProfiles();
-                alert('Profile updated successfully');
+        setConfirmModal({
+            open: true,
+            title: 'Update Profile',
+            message: 'Are you sure you want to save changes to this profile?',
+            confirmColor: 'indigo',
+            onConfirm: async () => {
+                setActionLoading(editModal.id);
+                try {
+                    const { data } = await Axios.post(`/admin/profiles/${editModal.id}/update`, editModal.data);
+                    if (data.status) {
+                        setEditModal({ ...editModal, open: false });
+                        fetchProfiles();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to update profile');
+                } finally {
+                    setActionLoading(null);
+                    setConfirmModal(prev => ({ ...prev, open: false }));
+                }
             }
-        } catch (err) {
-            console.error(err);
-            alert('Failed to update profile');
-        } finally {
-            setActionLoading(null);
-        }
+        });
     };
 
     // Add Profile Logic
@@ -556,6 +579,16 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.open}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                onConfirm={confirmModal.onConfirm}
+                onCancel={() => setConfirmModal({ ...confirmModal, open: false })}
+                confirmColor={confirmModal.confirmColor}
+            />
         </div>
     );
 }

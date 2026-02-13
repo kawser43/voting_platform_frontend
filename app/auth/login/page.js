@@ -18,8 +18,12 @@ export default function LoginPage() {
         setError(null);
         try {
             const { data } = await Axios.post('/login', formData);
-            loginUser(data.user, data.access_token);
-            router.push('/dashboard');
+            if (data.status) {
+                loginUser(data.data.user, data.data.access_token);
+                router.push('/dashboard');
+            } else {
+                setError(data.message || 'Login failed');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         } finally {

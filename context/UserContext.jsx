@@ -54,20 +54,20 @@ export default function UserContextProvider({ children }) {
                     setUser(null);
                     setIsLoggedIn(false);
                     if (!isAllowedPath(current_path)) {
-                        router.push('/login');
+                        router.push('/auth/login');
                     }
                 }
             } else {
                 setUser(null);
                 setIsLoggedIn(false);
                 if (!isAllowedPath(current_path)) {
-                    router.push('/login');
+                    router.push('/auth/login');
                 }
             }
         } catch (error) {
             localStorage.removeItem('token');
             if (!isAllowedPath(current_path)) {
-                router.push('/login');
+                router.push('/auth/login');
             }
         } finally {
             setIsLoading(false);
