@@ -162,17 +162,17 @@ export default function JudgesPage() {
                                             <p className="text-sm text-gray-500">{judge.designation}</p>
                                         </div>
                                     </div>
-                                    <div className="flex space-x-4">
+                                    <div className="flex space-x-2">
                                         <button
                                             onClick={() => setEditModal({ open: true, id: judge.id, data: { name: judge.name, designation: judge.designation } })}
-                                            className="text-indigo-600 hover:text-indigo-900"
+                                            className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => handleDeleteJudge(judge.id)}
                                             disabled={actionLoading === judge.id}
-                                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                            className="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                                         >
                                             Delete
                                         </button>
@@ -220,7 +220,7 @@ export default function JudgesPage() {
                                     type="file" 
                                     accept="image/*"
                                     onChange={(e) => setProfilePicture(e.target.files[0])}
-                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                                 />
                             </div>
                             <div className="mt-4 flex justify-end space-x-3">
@@ -275,7 +275,7 @@ export default function JudgesPage() {
                                     type="file" 
                                     accept="image/*"
                                     onChange={(e) => setProfilePicture(e.target.files[0])}
-                                    className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                                 />
                             </div>
                             <div className="mt-4 flex justify-end space-x-3">

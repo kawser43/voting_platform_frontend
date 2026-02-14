@@ -14,7 +14,7 @@ export default function ConfirmationModal({
 
     const colorClasses = {
         indigo: 'bg-indigo-600 hover:bg-indigo-700',
-        red: 'bg-red-600 hover:bg-red-700',
+        red: 'bg-indigo-800 hover:bg-indigo-900', // Mapped Red to Navy
         green: 'bg-green-600 hover:bg-green-700',
     };
 

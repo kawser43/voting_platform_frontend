@@ -10,6 +10,20 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Palette 4: Deep Teal & Beige */
+  /* A sophisticated, nature-inspired palette with deep teals and warm beige */
+  --color-indigo-50: #fcf9f5; /* Very Light Cream (Backgrounds) */
+  --color-indigo-100: #F2E3D5; /* Palette Beige/Cream (Soft Highlights) */
+  --color-indigo-200: #aedede; /* Mapped Light Teal Tint */
+  --color-indigo-300: #75caca;
+  --color-indigo-400: #3CA6A6; /* Palette Light Teal (Accents) */
+  --color-indigo-500: #1f8585;
+  --color-indigo-600: #026773; /* Palette Teal (Primary Action) */
+  --color-indigo-700: #024959; /* Palette Dark Teal (Hover) */
+  --color-indigo-800: #012E40; /* Palette Deep Navy (Sidebar/Dark Areas) */
+  --color-indigo-900: #001f2b; /* Deepest Shade */
+  --color-indigo-950: #000f14;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +36,28 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif; */
+}
+
+button {
+  cursor: pointer;
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }

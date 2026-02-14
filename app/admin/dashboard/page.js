@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import SearchableSelect from '@/components/inputs/SearchableSelect';
+import RichTextLimited from '@/components/inputs/RichTextLimited';
 
 export default function AdminDashboard() {
     const { user, isLoggedIn } = useUser();
@@ -25,12 +27,20 @@ export default function AdminDashboard() {
         id: null, 
         data: {
             organization_name: '',
+            country: '',
             summary: '',
             why_win: '',
             how_help: '',
-            website_url: ''
+            website_url: '',
+            founder_video_url: '',
+            facebook: '',
+            twitter: '',
+            linkedin: '',
+            instagram: ''
         }
     });
+    const [editLogo, setEditLogo] = useState(null);
+    const [editPitchDeck, setEditPitchDeck] = useState(null);
     
     // Add Profile State
     const [addModal, setAddModal] = useState({ open: false });
@@ -39,15 +49,32 @@ export default function AdminDashboard() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [addData, setAddData] = useState({
         organization_name: '',
+        country: '',
         summary: '',
         why_win: '',
         how_help: '',
-        website_url: ''
+        website_url: '',
+        founder_video_url: '',
+        facebook: '',
+        twitter: '',
+        linkedin: '',
+        instagram: ''
     });
     const [addLogo, setAddLogo] = useState(null);
+    const [addPitchDeck, setAddPitchDeck] = useState(null);
+    const [countries, setCountries] = useState([]);
 
     // Redirect if not admin
     useEffect(() => {
+        const fetchCountries = async () => {
+            try {
+                const { data } = await Axios.get('/countries');
+                if (data.status) setCountries(data.data || []);
+            } catch (err) {
+                console.error('Failed to load countries', err);
+            }
+        };
+        fetchCountries();
         if (!isLoggedIn) {
             // router.push('/auth/login'); // Handled by context usually, but good fallback
         } else if (user && user.role_id !== 1) {
@@ -120,15 +147,23 @@ export default function AdminDashboard() {
     };
 
     const openEditModal = (profile) => {
+        setEditLogo(null);
+        setEditPitchDeck(null);
         setEditModal({
             open: true,
             id: profile.id,
             data: {
                 organization_name: profile.organization_name || '',
+                country: profile.country || '',
                 summary: profile.summary || '',
                 why_win: profile.why_win || '',
                 how_help: profile.how_help || '',
-                website_url: profile.website_url || ''
+                website_url: profile.website_url || '',
+                founder_video_url: profile.founder_video_url || '',
+                facebook: (profile.social_links && profile.social_links.facebook) || '',
+                twitter: (profile.social_links && profile.social_links.twitter) || '',
+                linkedin: (profile.social_links && profile.social_links.linkedin) || '',
+                instagram: (profile.social_links && profile.social_links.instagram) || ''
             }
         });
     };
@@ -143,9 +178,35 @@ export default function AdminDashboard() {
             onConfirm: async () => {
                 setActionLoading(editModal.id);
                 try {
-                    const { data } = await Axios.post(`/admin/profiles/${editModal.id}/update`, editModal.data);
+                    const formData = new FormData();
+                    formData.append('organization_name', editModal.data.organization_name);
+                    formData.append('summary', editModal.data.summary);
+                    if (editModal.data.country) formData.append('country', editModal.data.country);
+                    formData.append('why_win', editModal.data.why_win);
+                    formData.append('how_help', editModal.data.how_help);
+                    if (editModal.data.website_url) formData.append('website_url', editModal.data.website_url);
+                    if (editModal.data.founder_video_url) formData.append('founder_video_url', editModal.data.founder_video_url);
+                    const socialLinks = {
+                        facebook: editModal.data.facebook || '',
+                        twitter: editModal.data.twitter || '',
+                        linkedin: editModal.data.linkedin || '',
+                        instagram: editModal.data.instagram || ''
+                    };
+                    formData.append('social_links', JSON.stringify(socialLinks));
+                    if (editLogo) {
+                        formData.append('logo', editLogo);
+                    }
+                    if (editPitchDeck) {
+                        formData.append('pitch_deck', editPitchDeck);
+                    }
+
+                    const { data } = await Axios.post(`/admin/profiles/${editModal.id}/update`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+
                     if (data.status) {
                         setEditModal({ ...editModal, open: false });
+                        setEditLogo(null);
                         fetchProfiles();
                     }
                 } catch (err) {
@@ -189,11 +250,23 @@ export default function AdminDashboard() {
         const formData = new FormData();
         formData.append('user_id', selectedUser.id);
         formData.append('organization_name', addData.organization_name);
+        if (addData.country) formData.append('country', addData.country);
         formData.append('summary', addData.summary);
         formData.append('why_win', addData.why_win);
         formData.append('how_help', addData.how_help);
         if (addData.website_url) formData.append('website_url', addData.website_url);
+        if (addData.founder_video_url) formData.append('founder_video_url', addData.founder_video_url);
+        const socialLinks = {
+            facebook: addData.facebook || '',
+            twitter: addData.twitter || '',
+            linkedin: addData.linkedin || '',
+            instagram: addData.instagram || ''
+        };
+        formData.append('social_links', JSON.stringify(socialLinks));
         formData.append('logo', addLogo);
+        if (addPitchDeck) {
+            formData.append('pitch_deck', addPitchDeck);
+        }
 
         setLoading(true);
         try {
@@ -206,6 +279,7 @@ export default function AdminDashboard() {
                 setSelectedUser(null);
                 setAddData({
                     organization_name: '',
+                    country: '',
                     summary: '',
                     why_win: '',
                     how_help: '',
@@ -281,26 +355,26 @@ export default function AdminDashboard() {
                                             </a>
                                         </div>
                                     </div>
-                                    <div className="ml-4 flex items-center space-x-4">
+                                    <div className="ml-4 flex items-center space-x-2">
                                         {statusFilter === 'pending' && (
                                             <>
                                                 <button
                                                     onClick={() => openEditModal(profile)}
-                                                    className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+                                                    className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
                                                     onClick={() => handleApprove(profile.id)}
                                                     disabled={actionLoading === profile.id}
-                                                    className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                                                    className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                                                 >
                                                     Approve
                                                 </button>
                                                 <button
                                                     onClick={() => setRejectModal({ open: true, id: profile.id, reason: '' })}
                                                     disabled={actionLoading === profile.id}
-                                                    className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 disabled:opacity-50"
+                                                    className="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                                                 >
                                                     Reject
                                                 </button>
@@ -310,7 +384,7 @@ export default function AdminDashboard() {
                                             <button
                                                 onClick={() => handleApprove(profile.id)} // Allow re-approving
                                                 disabled={actionLoading === profile.id}
-                                                className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                                                className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                                             >
                                                 Approve
                                             </button>
@@ -319,14 +393,14 @@ export default function AdminDashboard() {
                                             <>
                                                 <button
                                                     onClick={() => openEditModal(profile)}
-                                                    className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+                                                    className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
                                                     onClick={() => setRejectModal({ open: true, id: profile.id, reason: '' })}
                                                     disabled={actionLoading === profile.id}
-                                                    className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 disabled:opacity-50"
+                                                    className="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
                                                 >
                                                     Reject
                                                 </button>
@@ -346,8 +420,8 @@ export default function AdminDashboard() {
 
             {/* Reject Modal */}
             {rejectModal.open && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-start sm:items-center justify-center p-4 z-50 min-h-full">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Reject Profile</h3>
                         <textarea
                             className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border"
@@ -365,7 +439,7 @@ export default function AdminDashboard() {
                             </button>
                             <button
                                 onClick={handleReject}
-                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                                className="bg-indigo-800 text-white px-4 py-2 rounded hover:bg-indigo-900"
                             >
                                 Reject
                             </button>
@@ -376,8 +450,8 @@ export default function AdminDashboard() {
 
             {/* Edit Modal */}
             {editModal.open && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-y-auto">
-                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-start sm:items-center justify-center p-4 z-50 min-h-full">
+                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Profile</h3>
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
                             <div>
@@ -391,30 +465,59 @@ export default function AdminDashboard() {
                                 />
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Country</label>
+                                <SearchableSelect
+                                    items={countries}
+                                    getLabel={(c) => `${c.name}${c.iso2 ? ` (${c.iso2})` : ''}`}
+                                    getValue={(c) => c.name}
+                                    value={editModal.data.country || ''}
+                                    onChange={(val) => setEditModal({ ...editModal, data: { ...editModal.data, country: val } })}
+                                    placeholder="Select a country"
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">Summary</label>
-                                <textarea 
+                                <RichTextLimited
                                     value={editModal.data.summary}
-                                    onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, summary: e.target.value } })}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
-                                    required
+                                    onChange={(html) => setEditModal({ ...editModal, data: { ...editModal.data, summary: html } })}
+                                    maxLength={300}
+                                    placeholder="Short summary (max 300 characters)"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Why Win</label>
-                                <textarea 
+                                <RichTextLimited
                                     value={editModal.data.why_win}
-                                    onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, why_win: e.target.value } })}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
-                                    required
+                                    onChange={(html) => setEditModal({ ...editModal, data: { ...editModal.data, why_win: html } })}
+                                    maxLength={300}
+                                    placeholder="Why the organization deserves to win (max 300 characters)"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">How Help</label>
-                                <textarea 
+                                <RichTextLimited
                                     value={editModal.data.how_help}
-                                    onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, how_help: e.target.value } })}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
-                                    required
+                                    onChange={(html) => setEditModal({ ...editModal, data: { ...editModal.data, how_help: html } })}
+                                    maxLength={300}
+                                    placeholder="How funds will help (max 300 characters)"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Logo (Leave empty to keep current)</label>
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={(e) => setEditLogo(e.target.files[0])}
+                                    className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Pitch Deck (PDF, PowerPoint, or JPG, optional)</label>
+                                <input 
+                                    type="file" 
+                                    accept="application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,image/jpeg"
+                                    onChange={(e) => setEditPitchDeck(e.target.files[0])}
+                                    className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                                 />
                             </div>
                             <div>
@@ -425,6 +528,53 @@ export default function AdminDashboard() {
                                     onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, website_url: e.target.value } })}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Founder Video (YouTube)</label>
+                                <input 
+                                    type="url" 
+                                    value={editModal.data.founder_video_url}
+                                    onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, founder_video_url: e.target.value } })}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Facebook</label>
+                                    <input 
+                                        type="url" 
+                                        value={editModal.data.facebook}
+                                        onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, facebook: e.target.value } })}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Twitter</label>
+                                    <input 
+                                        type="url" 
+                                        value={editModal.data.twitter}
+                                        onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, twitter: e.target.value } })}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">LinkedIn</label>
+                                    <input 
+                                        type="url" 
+                                        value={editModal.data.linkedin}
+                                        onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, linkedin: e.target.value } })}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Instagram</label>
+                                    <input 
+                                        type="url" 
+                                        value={editModal.data.instagram}
+                                        onChange={(e) => setEditModal({ ...editModal, data: { ...editModal.data, instagram: e.target.value } })}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                    />
+                                </div>
                             </div>
                             <div className="mt-4 flex justify-end space-x-3">
                                 <button
@@ -448,8 +598,8 @@ export default function AdminDashboard() {
 
             {/* Add Profile Modal */}
             {addModal.open && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-y-auto">
-                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-start sm:items-center justify-center p-4 z-50 min-h-full">
+                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Add Organization Profile</h3>
                         <form onSubmit={handleAddProfile} className="space-y-4">
                             {/* User Selection */}
@@ -511,41 +661,111 @@ export default function AdminDashboard() {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-700">Country</label>
+                                        <SearchableSelect
+                                            items={countries}
+                                            getLabel={(c) => `${c.name}${c.iso2 ? ` (${c.iso2})` : ''}`}
+                                            getValue={(c) => c.name}
+                                            value={addData.country}
+                                            onChange={(val) => setAddData({ ...addData, country: val })}
+                                            placeholder="Select a country"
+                                        />
+                                    </div>
+                                    <div>
                                         <label className="block text-sm font-medium text-gray-700">Logo</label>
                                         <input 
                                             type="file" 
                                             accept="image/*"
                                             onChange={(e) => setAddLogo(e.target.files[0])}
-                                            className="mt-1 block w-full"
+                                            className="mt-1 block w-full cursor-pointer file:cursor-pointer"
                                             required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Pitch Deck (PDF, PowerPoint, or JPG, optional)</label>
+                                        <input 
+                                            type="file" 
+                                            accept="application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,image/jpeg"
+                                            onChange={(e) => setAddPitchDeck(e.target.files[0])}
+                                            className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Summary</label>
-                                        <textarea 
+                                        <RichTextLimited
                                             value={addData.summary}
-                                            onChange={(e) => setAddData({ ...addData, summary: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                                            onChange={(html) => setAddData({ ...addData, summary: html })}
+                                            maxLength={300}
                                             required
+                                            placeholder="Short summary (max 300 characters)"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Why Win</label>
-                                        <textarea 
+                                        <RichTextLimited
                                             value={addData.why_win}
-                                            onChange={(e) => setAddData({ ...addData, why_win: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                                            onChange={(html) => setAddData({ ...addData, why_win: html })}
+                                            maxLength={300}
                                             required
+                                            placeholder="Why the organization deserves to win (max 300 characters)"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">How Help</label>
-                                        <textarea 
+                                        <RichTextLimited
                                             value={addData.how_help}
-                                            onChange={(e) => setAddData({ ...addData, how_help: e.target.value })}
-                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                                            onChange={(html) => setAddData({ ...addData, how_help: html })}
+                                            maxLength={300}
                                             required
+                                            placeholder="How funds will help (max 300 characters)"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Founder Video (YouTube)</label>
+                                        <input 
+                                            type="url" 
+                                            value={addData.founder_video_url}
+                                            onChange={(e) => setAddData({ ...addData, founder_video_url: e.target.value })}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Facebook</label>
+                                            <input 
+                                                type="url" 
+                                                value={addData.facebook}
+                                                onChange={(e) => setAddData({ ...addData, facebook: e.target.value })}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Twitter</label>
+                                            <input 
+                                                type="url" 
+                                                value={addData.twitter}
+                                                onChange={(e) => setAddData({ ...addData, twitter: e.target.value })}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">LinkedIn</label>
+                                            <input 
+                                                type="url" 
+                                                value={addData.linkedin}
+                                                onChange={(e) => setAddData({ ...addData, linkedin: e.target.value })}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Instagram</label>
+                                            <input 
+                                                type="url" 
+                                                value={addData.instagram}
+                                                onChange={(e) => setAddData({ ...addData, instagram: e.target.value })}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Website URL</label>
