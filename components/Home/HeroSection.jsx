@@ -11,7 +11,7 @@ export default function HeroSection({ profiles }) {
     
     const [heroContent, setHeroContent] = useState({
         hero_title: 'Vote for Your <br class="hidden lg:block" /> <span class="text-indigo-600">Favorite Organization</span>',
-        hero_subtitle: 'Discover and support amazing organizations making a difference. Your vote counts in shaping the future!',
+        hero_subtitle: 'Browse impactful organizations and support the initiatives that resonate with you.',
         hero_button_text: 'Get Started',
         hero_button_2_text: 'View Leaderboard'
     });
@@ -66,9 +66,10 @@ export default function HeroSection({ profiles }) {
                             </Link>
                             <Link 
                                 href="/leaderboard" 
-                                className="px-8 py-3 bg-white text-indigo-600 border border-indigo-200 rounded-lg font-semibold hover:bg-indigo-50 transition-all shadow-sm hover:shadow-md"
+                                className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-300 font-semibold shadow-md hover:bg-indigo-100 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
                             >
-                                {heroContent.hero_button_2_text}
+                                <span>{heroContent.hero_button_2_text}</span>
+                                <span>→</span>
                             </Link>
                         </div>
                     </div>

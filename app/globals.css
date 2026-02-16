@@ -11,19 +11,19 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   
-  /* Palette 4: Deep Teal & Beige */
-  /* A sophisticated, nature-inspired palette with deep teals and warm beige */
-  --color-indigo-50: #fcf9f5; /* Very Light Cream (Backgrounds) */
-  --color-indigo-100: #F2E3D5; /* Palette Beige/Cream (Soft Highlights) */
-  --color-indigo-200: #aedede; /* Mapped Light Teal Tint */
-  --color-indigo-300: #75caca;
-  --color-indigo-400: #3CA6A6; /* Palette Light Teal (Accents) */
-  --color-indigo-500: #1f8585;
-  --color-indigo-600: #026773; /* Palette Teal (Primary Action) */
-  --color-indigo-700: #024959; /* Palette Dark Teal (Hover) */
-  --color-indigo-800: #012E40; /* Palette Deep Navy (Sidebar/Dark Areas) */
-  --color-indigo-900: #001f2b; /* Deepest Shade */
-  --color-indigo-950: #000f14;
+  /* Palette: Bright Blue Brand */
+  /* Base brand color: #00BBF9 with supporting shades */
+  --color-indigo-50: #E6F9FF;
+  --color-indigo-100: #CCF2FF;
+  --color-indigo-200: #99E5FF;
+  --color-indigo-300: #66D7FF;
+  --color-indigo-400: #33CAFF;
+  --color-indigo-500: #00BBF9;
+  --color-indigo-600: #0095CC;
+  --color-indigo-700: #0070A0;
+  --color-indigo-800: #004C73;
+  --color-indigo-900: #00263B;
+  --color-indigo-950: #00131F;
 }
 
 @media (prefers-color-scheme: dark) {

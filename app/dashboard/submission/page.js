@@ -17,6 +17,7 @@ export default function SubmissionPage() {
     const [formData, setFormData] = useState({
         organization_name: '',
         country: '',
+        category_id: '',
         summary: '',
         why_win: '',
         how_help: '',
@@ -36,6 +37,7 @@ export default function SubmissionPage() {
     const whyRef = useRef(null);
     const helpRef = useRef(null);
     const [countries, setCountries] = useState([]);
+    const [categories, setCategories] = useState([]);
     const messageRef = useRef(null);
     const [showToast, setShowToast] = useState(false);
 
@@ -77,9 +79,11 @@ export default function SubmissionPage() {
                 if (data.status && data.data) {
                     const profile = data.data;
                     const socials = profile.social_links || {};
-                    setFormData({
+                    setFormData(prev => ({
+                        ...prev,
                         organization_name: profile.organization_name || '',
                         country: profile.country || '',
+                        category_id: profile.category_id || '',
                         summary: profile.summary || '',
                         why_win: profile.why_win || '',
                         how_help: profile.how_help || '',
@@ -89,7 +93,7 @@ export default function SubmissionPage() {
                         twitter: socials.twitter || '',
                         linkedin: socials.linkedin || '',
                         instagram: socials.instagram || ''
-                    });
+                    }));
                     if (profile.logo_url) {
                         setPreview(profile.logo_url);
                     }
@@ -120,6 +124,17 @@ export default function SubmissionPage() {
             }
         };
         fetchCountries();
+        const fetchCategories = async () => {
+            try {
+                const { data } = await Axios.get('/categories');
+                if (data.status) {
+                    setCategories(data.data || []);
+                }
+            } catch (err) {
+                console.error('Failed to load categories', err);
+            }
+        };
+        fetchCategories();
     }, []);
 
     const handleChange = (e) => {
@@ -150,6 +165,9 @@ export default function SubmissionPage() {
         const data = new FormData();
         data.append('organization_name', formData.organization_name);
         data.append('country', formData.country);
+        if (formData.category_id) {
+            data.append('category_id', formData.category_id);
+        }
         data.append('summary', formData.summary);
         data.append('why_win', formData.why_win);
         data.append('how_help', formData.how_help);
@@ -263,6 +281,20 @@ export default function SubmissionPage() {
                             value={formData.country}
                             onChange={(val) => setFormData(prev => ({ ...prev, country: val }))}
                             placeholder="Select a country"
+                            disabled={status === 'approved'}
+                        />
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Category</label>
+                        <SearchableSelect
+                            items={categories}
+                            getLabel={(c) => c.name}
+                            getValue={(c) => String(c.id)}
+                            value={formData.category_id ? String(formData.category_id) : ''}
+                            onChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
+                            placeholder="Select a category"
                             disabled={status === 'approved'}
                         />
                     </div>

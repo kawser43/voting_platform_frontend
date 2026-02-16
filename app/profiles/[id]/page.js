@@ -357,8 +357,23 @@ export default function PublicProfilePage() {
                                 <div className="flex items-center flex-wrap gap-3 mb-2">
                                     <h1 className="text-4xl font-extrabold text-gray-900">{profile.organization_name}</h1>
                                     {profile.country && (
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium border border-indigo-100">
-                                            {profile.country}
+                                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium border border-indigo-100">
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                                <circle cx="12" cy="12" r="9" />
+                                                <path d="M3 12h18" />
+                                                <path d="M12 3a14 14 0 010 18" />
+                                                <path d="M12 3a14 14 0 000 18" />
+                                            </svg>
+                                            <span>{profile.country}</span>
+                                        </span>
+                                    )}
+                                    {profile.category && profile.category.name && (
+                                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-sm font-medium border border-purple-100">
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                                <path d="M4 4h8l8 8-8 8-8-8z" />
+                                                <path d="M9 9.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                                            </svg>
+                                            <span>{profile.category.name}</span>
                                         </span>
                                     )}
                                 </div>

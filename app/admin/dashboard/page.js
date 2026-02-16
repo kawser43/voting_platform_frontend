@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import SearchableSelect from '@/components/inputs/SearchableSelect';
 import RichTextLimited from '@/components/inputs/RichTextLimited';
+import AlertModal from '@/components/AlertModal';
 
 export default function AdminDashboard() {
     const { user, isLoggedIn } = useUser();
@@ -13,7 +14,7 @@ export default function AdminDashboard() {
     const [profiles, setProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('pending');
-    const [actionLoading, setActionLoading] = useState(null); // id of profile being processed
+    const [actionLoading, setActionLoading] = useState(null);
     const [rejectModal, setRejectModal] = useState({ open: false, id: null, reason: '' });
     const [confirmModal, setConfirmModal] = useState({ 
         open: false, 
@@ -22,12 +23,19 @@ export default function AdminDashboard() {
         onConfirm: () => {},
         confirmColor: 'indigo' 
     });
+    const [alertState, setAlertState] = useState({
+        open: false,
+        title: '',
+        message: '',
+        type: 'error'
+    });
     const [editModal, setEditModal] = useState({ 
         open: false, 
         id: null, 
         data: {
             organization_name: '',
             country: '',
+            category_id: '',
             summary: '',
             why_win: '',
             how_help: '',
@@ -41,8 +49,8 @@ export default function AdminDashboard() {
     });
     const [editLogo, setEditLogo] = useState(null);
     const [editPitchDeck, setEditPitchDeck] = useState(null);
+    const [editSubmitting, setEditSubmitting] = useState(false);
     
-    // Add Profile State
     const [addModal, setAddModal] = useState({ open: false });
     const [userSearch, setUserSearch] = useState('');
     const [userResults, setUserResults] = useState([]);
@@ -50,6 +58,7 @@ export default function AdminDashboard() {
     const [addData, setAddData] = useState({
         organization_name: '',
         country: '',
+        category_id: '',
         summary: '',
         why_win: '',
         how_help: '',
@@ -62,7 +71,9 @@ export default function AdminDashboard() {
     });
     const [addLogo, setAddLogo] = useState(null);
     const [addPitchDeck, setAddPitchDeck] = useState(null);
+    const [addSubmitting, setAddSubmitting] = useState(false);
     const [countries, setCountries] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     // Redirect if not admin
     useEffect(() => {
@@ -74,7 +85,16 @@ export default function AdminDashboard() {
                 console.error('Failed to load countries', err);
             }
         };
+        const fetchCategories = async () => {
+            try {
+                const { data } = await Axios.get('/admin/categories');
+                if (data.status) setCategories(data.data || []);
+            } catch (err) {
+                console.error('Failed to load categories', err);
+            }
+        };
         fetchCountries();
+        fetchCategories();
         if (!isLoggedIn) {
             // router.push('/auth/login'); // Handled by context usually, but good fallback
         } else if (user && user.role_id !== 1) {
@@ -117,7 +137,12 @@ export default function AdminDashboard() {
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('Failed to approve profile');
+                    setAlertState({
+                        open: true,
+                        title: 'Approval Failed',
+                        message: err.response?.data?.message || 'Failed to approve profile',
+                        type: 'error'
+                    });
                 } finally {
                     setActionLoading(null);
                     setConfirmModal(prev => ({ ...prev, open: false }));
@@ -127,7 +152,15 @@ export default function AdminDashboard() {
     };
 
     const handleReject = async () => {
-        if (!rejectModal.reason) return alert('Please provide a reason');
+        if (!rejectModal.reason) {
+            setAlertState({
+                open: true,
+                title: 'Reason Required',
+                message: 'Please provide a reason for rejection.',
+                type: 'error'
+            });
+            return;
+        }
         
         setActionLoading(rejectModal.id);
         try {
@@ -140,7 +173,12 @@ export default function AdminDashboard() {
             }
         } catch (err) {
             console.error(err);
-            alert('Failed to reject profile');
+            setAlertState({
+                open: true,
+                title: 'Rejection Failed',
+                message: err.response?.data?.message || 'Failed to reject profile',
+                type: 'error'
+            });
         } finally {
             setActionLoading(null);
         }
@@ -155,6 +193,7 @@ export default function AdminDashboard() {
             data: {
                 organization_name: profile.organization_name || '',
                 country: profile.country || '',
+                category_id: profile.category_id || '',
                 summary: profile.summary || '',
                 why_win: profile.why_win || '',
                 how_help: profile.how_help || '',
@@ -177,11 +216,13 @@ export default function AdminDashboard() {
             confirmColor: 'indigo',
             onConfirm: async () => {
                 setActionLoading(editModal.id);
+                setEditSubmitting(true);
                 try {
                     const formData = new FormData();
                     formData.append('organization_name', editModal.data.organization_name);
                     formData.append('summary', editModal.data.summary);
                     if (editModal.data.country) formData.append('country', editModal.data.country);
+                    if (editModal.data.category_id) formData.append('category_id', editModal.data.category_id);
                     formData.append('why_win', editModal.data.why_win);
                     formData.append('how_help', editModal.data.how_help);
                     if (editModal.data.website_url) formData.append('website_url', editModal.data.website_url);
@@ -211,9 +252,15 @@ export default function AdminDashboard() {
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('Failed to update profile');
+                    setAlertState({
+                        open: true,
+                        title: 'Update Failed',
+                        message: err.response?.data?.message || 'Failed to update profile',
+                        type: 'error'
+                    });
                 } finally {
                     setActionLoading(null);
+                    setEditSubmitting(false);
                     setConfirmModal(prev => ({ ...prev, open: false }));
                 }
             }
@@ -244,13 +291,30 @@ export default function AdminDashboard() {
 
     const handleAddProfile = async (e) => {
         e.preventDefault();
-        if (!selectedUser) return alert('Please select a user first');
-        if (!addLogo) return alert('Please upload a logo');
+        if (!selectedUser) {
+            setAlertState({
+                open: true,
+                title: 'User Required',
+                message: 'Please select a user first.',
+                type: 'error'
+            });
+            return;
+        }
+        if (!addLogo) {
+            setAlertState({
+                open: true,
+                title: 'Logo Required',
+                message: 'Please upload a logo.',
+                type: 'error'
+            });
+            return;
+        }
 
         const formData = new FormData();
         formData.append('user_id', selectedUser.id);
         formData.append('organization_name', addData.organization_name);
         if (addData.country) formData.append('country', addData.country);
+        if (addData.category_id) formData.append('category_id', addData.category_id);
         formData.append('summary', addData.summary);
         formData.append('why_win', addData.why_win);
         formData.append('how_help', addData.how_help);
@@ -268,30 +332,46 @@ export default function AdminDashboard() {
             formData.append('pitch_deck', addPitchDeck);
         }
 
-        setLoading(true);
+        setAddSubmitting(true);
         try {
             const { data } = await Axios.post('/admin/profiles', formData);
             if (data.status) {
                 setAddModal({ open: false });
                 fetchProfiles();
-                alert('Profile created successfully');
+                setAlertState({
+                    open: true,
+                    title: 'Profile Created',
+                    message: 'The profile has been created successfully.',
+                    type: 'success'
+                });
                 // Reset form
                 setSelectedUser(null);
                 setAddData({
                     organization_name: '',
                     country: '',
+                    category_id: '',
                     summary: '',
                     why_win: '',
                     how_help: '',
-                    website_url: ''
+                    website_url: '',
+                    founder_video_url: '',
+                    facebook: '',
+                    twitter: '',
+                    linkedin: '',
+                    instagram: ''
                 });
                 setAddLogo(null);
             }
         } catch (err) {
             console.error(err);
-            alert(err.response?.data?.message || 'Failed to create profile');
+            setAlertState({
+                open: true,
+                title: 'Creation Failed',
+                message: err.response?.data?.message || 'Failed to create profile',
+                type: 'error'
+            });
         } finally {
-            setLoading(false);
+            setAddSubmitting(false);
         }
     };
 
@@ -476,6 +556,17 @@ export default function AdminDashboard() {
                                 />
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Category</label>
+                                <SearchableSelect
+                                    items={categories}
+                                    getLabel={(c) => c.name}
+                                    getValue={(c) => String(c.id)}
+                                    value={editModal.data.category_id ? String(editModal.data.category_id) : ''}
+                                    onChange={(val) => setEditModal({ ...editModal, data: { ...editModal.data, category_id: val } })}
+                                    placeholder="Select a category"
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">Summary</label>
                                 <RichTextLimited
                                     value={editModal.data.summary}
@@ -586,9 +677,36 @@ export default function AdminDashboard() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                                    disabled={editSubmitting}
+                                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Update Profile
+                                    {editSubmitting ? (
+                                        <span className="flex items-center">
+                                            <svg
+                                                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                            </svg>
+                                            Saving...
+                                        </span>
+                                    ) : (
+                                        'Update Profile'
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -669,6 +787,17 @@ export default function AdminDashboard() {
                                             value={addData.country}
                                             onChange={(val) => setAddData({ ...addData, country: val })}
                                             placeholder="Select a country"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Category</label>
+                                        <SearchableSelect
+                                            items={categories}
+                                            getLabel={(c) => c.name}
+                                            getValue={(c) => String(c.id)}
+                                            value={addData.category_id ? String(addData.category_id) : ''}
+                                            onChange={(val) => setAddData({ ...addData, category_id: val })}
+                                            placeholder="Select a category"
                                         />
                                     </div>
                                     <div>
@@ -789,16 +918,50 @@ export default function AdminDashboard() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={!selectedUser}
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+                                    disabled={!selectedUser || addSubmitting}
+                                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Create Profile
+                                    {addSubmitting ? (
+                                        <span className="flex items-center">
+                                            <svg
+                                                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                            </svg>
+                                            Creating...
+                                        </span>
+                                    ) : (
+                                        'Create Profile'
+                                    )}
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
+
+            <AlertModal
+                isOpen={alertState.open}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+                onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+            />
 
             {/* Confirmation Modal */}
             <ConfirmationModal

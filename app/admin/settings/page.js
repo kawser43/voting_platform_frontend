@@ -12,7 +12,7 @@ export default function AdminSettings() {
     const [saving, setSaving] = useState(false);
     const [settings, setSettings] = useState({
         hero_title: 'Vote for Your <br class="hidden lg:block" /> <span class="text-indigo-600">Favorite Organization</span>',
-        hero_subtitle: 'Discover and support amazing organizations making a difference. Your vote counts in shaping the future!',
+        hero_subtitle: 'Browse impactful organizations and support the initiatives that resonate with you.',
         hero_button_text: 'Get Started',
         hero_button_2_text: 'View Leaderboard'
     });

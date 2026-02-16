@@ -98,9 +98,18 @@ export default function OrganizationsSection({
 
                                 {/* Content */}
                                 <div className="p-6 flex-1 flex flex-col">
-                                    <h3 className="text-xl font-bold text-indigo-900 mb-3 line-clamp-1 group-hover:text-indigo-600 transition-colors">
-                                        {profile.organization_name}
+                                    <h3 className="text-xl font-bold text-indigo-900 mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                                        <Link href={`/profiles/${profile.id}`} className="hover:underline">
+                                            {profile.organization_name}
+                                        </Link>
                                     </h3>
+                                    {profile.category && profile.category.name && (
+                                        <div className="mb-2">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                {profile.category.name}
+                                            </span>
+                                        </div>
+                                    )}
                                     
                                     <p className="text-slate-500 text-sm mb-6 line-clamp-3 flex-1 leading-relaxed">
                                         {profile.summary || "No description available."}
