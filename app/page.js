@@ -328,7 +328,7 @@ export default function Home() {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-3">
+                                    {/* <div className="flex gap-3">
                                         <div className="mt-1 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
                                             💰
                                         </div>
@@ -340,7 +340,7 @@ export default function Home() {
                                                 Raise funds during Ramadan while competing for dedicated prize funding.
                                             </p>
                                         </div>
-                                    </div>
+                                    </div> */}
                                     <div className="flex gap-3">
                                         <div className="mt-1 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
                                             ⭐
@@ -607,10 +607,10 @@ export default function Home() {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-indigo-900">
-                                            Apply &amp; build
+                                            Apply and Build
                                         </p>
                                         <p className="mt-1 text-slate-700">
-                                            Submit your 2-year roadmap and a 1-minute pitch video outlining your initiative and its impact goals.
+                                            Submit your application and a 2 minute video about your initiatives and impact goals.
                                         </p>
                                     </div>
                                 </li>
@@ -620,10 +620,10 @@ export default function Home() {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-indigo-900">
-                                            Share &amp; rally
+                                            Share and Rally
                                         </p>
                                         <p className="mt-1 text-slate-700">
-                                            In the second week of Ramadan, the Ma&apos;a leaderboard goes live. Share your GlobalSadaqah page and rally your community to support and vote.
+                                            On 25 February to 4 March 2026 The Ma’a leaderboard will be live for public voting . Share your Global Sadaqah page and rally your community to support and vote.
                                         </p>
                                     </div>
                                 </li>
@@ -633,10 +633,10 @@ export default function Home() {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-indigo-900">
-                                            The top 30
+                                            The Top 30
                                         </p>
                                         <p className="mt-1 text-slate-700">
-                                            The top 10 projects from each category advance to our Final Selection Committee. Other campaigns stay live to keep raising funds.
+                                            The top 10 most-voted projects from 3 categories will advance to form our Top 30 Finalists. This exclusive shortlist will be presented to our expert judging panel for a comprehensive evaluation.
                                         </p>
                                     </div>
                                 </li>
@@ -646,10 +646,10 @@ export default function Home() {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-indigo-900">
-                                            The final 15
+                                            The Final 15
                                         </p>
                                         <p className="mt-1 text-slate-700">
-                                            Judges select 5 winners per track based on significant impact and unique innovation. Winners receive the $5,000 prize on the 21st of Ramadan.
+                                            From this elite group, judges will select five winners per category based on demonstrable impact and pioneering innovation. Each winner will be awarded a $5,000 prize to further their mission, with the official announcement scheduled for March 11 2026.
                                         </p>
                                     </div>
                                 </li>
@@ -688,7 +688,7 @@ export default function Home() {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3">
+                                {/* <div className="flex gap-3">
                                     <div className="mt-0.5 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
                                         💸
                                     </div>
@@ -700,7 +700,7 @@ export default function Home() {
                                             Collecting donations from a global audience during the most generous month of the year.
                                         </p>
                                     </div>
-                                </div>
+                                </div> */}
                                 <div className="flex gap-3">
                                     <div className="mt-0.5 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
                                         🤝
@@ -756,7 +756,7 @@ export default function Home() {
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        13 February 2026
+                                        Now until 24 February 2026
                                     </p>
                                 </div>
 
@@ -770,10 +770,7 @@ export default function Home() {
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        Week 1 of Ramadan (18 February)
-                                    </p>
-                                    <p className="text-xs text-slate-600 mt-1.5">
-                                        Campaigns go live on GlobalSadaqah.
+                                        25 February 2026
                                     </p>
                                 </div>
 
@@ -902,15 +899,14 @@ export default function Home() {
                                                         className="flex items-center pr-3 py-3 rounded-xl hover:bg-indigo-50 transition-colors group border border-transparent hover:border-indigo-100 cursor-pointer"
                                                     >
                                                         <div
-                                                            className={`font-bold w-8 text-lg mr-2 ${
-                                                                index === 0
-                                                                    ? 'text-yellow-500'
-                                                                    : index === 1
-                                                                        ? 'text-gray-400'
-                                                                        : index === 2
-                                                                            ? 'text-amber-600'
-                                                                            : 'text-indigo-300'
-                                                            }`}
+                                                            className={`font-bold w-8 text-lg mr-2 ${index === 0
+                                                                ? 'text-yellow-500'
+                                                                : index === 1
+                                                                    ? 'text-gray-400'
+                                                                    : index === 2
+                                                                        ? 'text-amber-600'
+                                                                        : 'text-indigo-300'
+                                                                }`}
                                                         >
                                                             #{String(index + 1).padStart(2, '0')}
                                                         </div>

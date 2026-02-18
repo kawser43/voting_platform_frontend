@@ -252,7 +252,6 @@ export default function PublicProfilePage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10">
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                     <div className="md:flex">
-                        {/* Sidebar / Info Column */}
                         <div className="md:w-1/3 lg:w-1/4 bg-gray-50 border-r border-gray-100 p-8 text-center md:text-left">
                             <div className="relative block w-full mb-6">
                                 {profile.logo_url ? (
@@ -312,7 +311,6 @@ export default function PublicProfilePage() {
                                 </div>
                             </div>
 
-                            {/* Contact/Social Links */}
                             <div className="space-y-4">
                                 {profile.website_url && (
                                     <a 
@@ -351,7 +349,6 @@ export default function PublicProfilePage() {
                             </div>
                         </div>
 
-                        {/* Main Content Column */}
                         <div className="md:w-2/3 lg:w-3/4 p-8 lg:p-12">
                             <div className="hidden md:block mb-8 border-b border-gray-100 pb-6">
                                 <div className="flex items-center flex-wrap gap-3 mb-2">
