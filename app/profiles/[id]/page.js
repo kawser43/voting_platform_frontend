@@ -329,7 +329,7 @@ export default function PublicProfilePage() {
                                             <path d="M9 9l3-6 3 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     )}
-                                    {user?.account_type === 'submitter' ? 'Voting Disabled' : (voteLoading ? 'Processing...' : (profile.is_voted ? 'Voted' : 'Vote Now'))}
+                                    {user?.account_type === 'submitter' ? 'Competitor cannot vote' : (voteLoading ? 'Processing...' : (profile.is_voted ? 'Voted' : 'Vote Now'))}
                                 </button>
                                 
                                 {user?.account_type === 'submitter' && (

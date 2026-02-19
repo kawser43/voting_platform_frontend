@@ -1,6 +1,11 @@
 'use client';
 import Link from 'next/link';
 
+function stripHtml(html) {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export default function OrganizationsSection({ 
     profiles, 
     loading, 
@@ -154,7 +159,7 @@ export default function OrganizationsSection({
                                     )}
                                     
                                     <p className="text-slate-500 text-sm mb-6 line-clamp-3 flex-1 leading-relaxed">
-                                        {profile.summary || "No description available."}
+                                        {profile.summary ? stripHtml(profile.summary) : "No description available."}
                                     </p>
                                     
                                     <div className="mt-auto pt-6 border-t border-indigo-50">

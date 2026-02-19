@@ -19,7 +19,29 @@ export default function LoginPage() {
         try {
             const { data } = await Axios.post('/login', formData);
             if (data.status) {
-                loginUser(data.data.user, data.data.access_token);
+                const loggedInUser = data.data.user;
+                loginUser(loggedInUser, data.data.access_token);
+
+                if (loggedInUser?.account_type === 'voter') {
+                    router.push('/explore');
+                    return;
+                }
+
+                if (loggedInUser?.account_type === 'submitter') {
+                    try {
+                        const profileResponse = await Axios.get('/profile');
+                        const profileData = profileResponse.data;
+                        if (profileData.status && profileData.data) {
+                            router.push('/dashboard');
+                        } else {
+                            router.push('/dashboard/submission');
+                        }
+                    } catch {
+                        router.push('/dashboard');
+                    }
+                    return;
+                }
+
                 router.push('/dashboard');
             } else {
                 setError(data.message || 'Login failed');
