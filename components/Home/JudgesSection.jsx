@@ -68,8 +68,8 @@ export default function JudgesSection({ judges, loading }) {
                                         <h3 className="text-xl font-bold text-indigo-900 mb-2 group-hover:text-indigo-600 transition-colors">
                                             {judge.name}
                                         </h3>
-                                        <div className="inline-block px-3 py-1 bg-indigo-50 rounded-full">
-                                            <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wide">
+                                        <div className="inline-block px-3 py-2 bg-indigo-50 rounded-full">
+                                            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">
                                                 {judge.designation}
                                             </p>
                                         </div>
