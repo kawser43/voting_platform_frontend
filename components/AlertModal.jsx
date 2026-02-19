@@ -5,7 +5,8 @@ export default function AlertModal({
     title, 
     message, 
     onClose, 
-    type = 'error' // error, success, info
+    type = 'error',
+    actions
 }) {
     if (!isOpen) return null;
 
@@ -53,14 +54,20 @@ export default function AlertModal({
                     </div>
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">{title}</h3>
                     <p className="text-sm text-gray-500 mb-6">{message}</p>
-                    <div className="flex justify-center">
-                        <button
-                            onClick={onClose}
-                            className={`${currentStyle.btnColor} text-white px-4 py-2 rounded-md font-medium w-full`}
-                        >
-                            OK
-                        </button>
-                    </div>
+                    {actions ? (
+                        <div className="flex flex-col gap-3">
+                            {actions}
+                        </div>
+                    ) : (
+                        <div className="flex justify-center">
+                            <button
+                                onClick={onClose}
+                                className={`${currentStyle.btnColor} text-white px-4 py-2 rounded-md font-medium w-full`}
+                            >
+                                OK
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

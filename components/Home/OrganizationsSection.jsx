@@ -9,7 +9,10 @@ export default function OrganizationsSection({
     handleSearch, 
     page, 
     lastPage, 
-    fetchProfiles 
+    fetchProfiles,
+    categories = [],
+    selectedCategory = 'all',
+    onCategoryChange,
 }) {
     return (
         <section id="organizations-section" className="relative py-20 bg-gray-50/50 overflow-hidden">
@@ -30,14 +33,14 @@ export default function OrganizationsSection({
             </div>
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-                {/* Header & Search */}
+                {/* Header, Search & Filters */}
                 <div className="flex flex-col items-center justify-center text-center gap-8 mb-12">
                     <div className="max-w-2xl">
                         <h2 className="text-3xl font-bold text-indigo-900 mb-2">Explore Organizations</h2>
                         <p className="text-slate-600">Discover impactful initiatives and cast your vote.</p>
                     </div>
 
-                    <div className="w-full max-w-xl">
+                    <div className="w-full max-w-xl space-y-4">
                         <form onSubmit={handleSearch} className="relative">
                             <div className="relative flex items-center">
                                 <input 
@@ -55,6 +58,40 @@ export default function OrganizationsSection({
                                 </button>
                             </div>
                         </form>
+                        {categories.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-indigo-500 text-center">
+                                    Filter by category
+                                </p>
+                                <div className="flex flex-wrap justify-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => onCategoryChange && onCategoryChange('all')}
+                                        className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
+                                            selectedCategory === 'all'
+                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                : 'bg-white text-indigo-700 border-indigo-100 hover:bg-indigo-50'
+                                        }`}
+                                    >
+                                        All
+                                    </button>
+                                    {categories.map(category => (
+                                        <button
+                                            key={category.id}
+                                            type="button"
+                                            onClick={() => onCategoryChange && onCategoryChange(category.slug)}
+                                            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
+                                                selectedCategory === category.slug
+                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                    : 'bg-white text-indigo-700 border-indigo-100 hover:bg-indigo-50'
+                                            }`}
+                                        >
+                                            {category.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -91,8 +128,13 @@ export default function OrganizationsSection({
                                             </svg>
                                         </div>
                                     )}
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-indigo-600 shadow-sm border border-indigo-100">
-                                        {profile.votes_count} Votes
+                                    <div className="absolute top-4 right-4 bg-indigo-900/95 px-3.5 py-1.5 rounded-full shadow-lg border border-indigo-500/70 flex items-baseline gap-1.5">
+                                        <span className="text-[10px] font-semibold tracking-[0.16em] uppercase text-indigo-200">
+                                            Votes
+                                        </span>
+                                        <span className="text-sm font-extrabold text-white leading-none">
+                                            {profile.votes_count}
+                                        </span>
                                     </div>
                                 </div>
 

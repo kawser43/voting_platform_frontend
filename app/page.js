@@ -12,6 +12,36 @@ import HeroSection from '@/components/Home/HeroSection';
 import JudgesSection from '@/components/Home/JudgesSection';
 import PartnersSection from '@/components/Home/PartnersSection';
 
+const SUBMISSION_DEADLINE = Date.UTC(2026, 1, 27, 15, 59, 59);
+
+const calculateTimeLeft = () => {
+    const now = new Date().getTime();
+    const diff = SUBMISSION_DEADLINE - now;
+
+    if (diff <= 0) {
+        return {
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            isPast: true,
+        };
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    return {
+        days,
+        hours,
+        minutes,
+        seconds,
+        isPast: false,
+    };
+};
+
 export default function Home() {
     const { user, isLoggedIn } = useUser();
     const [profiles, setProfiles] = useState([]);
@@ -30,6 +60,7 @@ export default function Home() {
         hasVoted: false,
         canVote: true
     });
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
 
     const fetchProfiles = async (pageNumber = 1, searchQuery = '') => {
         setLoading(true);
@@ -179,6 +210,14 @@ export default function Home() {
         checkVoteStatus();
     }, [isLoggedIn, user]);
 
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
     const applyHref = isLoggedIn && user?.account_type === 'submitter'
         ? '/dashboard/submission'
         : '/auth/register';
@@ -186,6 +225,54 @@ export default function Home() {
     return (
         <div className="bg-gray-50">
             <main>
+                <div className="sticky top-0 z-30 bg-indigo-900 text-indigo-50 border-b border-indigo-700/60">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                            <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Submissions Close In:</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                            {timeLeft.isPast ? (
+                                <span className="text-xs sm:text-sm font-semibold text-amber-200">
+                                    Submissions are now closed
+                                </span>
+                            ) : (
+                                <div className="flex items-center gap-2 text-[11px] sm:text-xs font-mono">
+                                    <div className="flex flex-col items-center">
+                                        <span className="px-2 py-1 rounded-md bg-indigo-800 text-indigo-50 min-w-[2.5rem] text-center">
+                                            {String(timeLeft.days).padStart(2, '0')}
+                                        </span>
+                                        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-indigo-200">Days</span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="px-2 py-1 rounded-md bg-indigo-800 text-indigo-50 min-w-[2.5rem] text-center">
+                                            {String(timeLeft.hours).padStart(2, '0')}
+                                        </span>
+                                        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-indigo-200">Hours</span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="px-2 py-1 rounded-md bg-indigo-800 text-indigo-50 min-w-[2.5rem] text-center">
+                                            {String(timeLeft.minutes).padStart(2, '0')}
+                                        </span>
+                                        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-indigo-200">Minutes</span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="px-2 py-1 rounded-md bg-indigo-800 text-indigo-50 min-w-[2.5rem] text-center">
+                                            {String(timeLeft.seconds).padStart(2, '0')}
+                                        </span>
+                                        <span className="mt-0.5 text-[9px] uppercase tracking-wide text-indigo-200">Seconds</span>
+                                    </div>
+                                </div>
+                            )}
+                            <Link
+                                href={applyHref}
+                                className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-emerald-400 text-indigo-950 text-xs sm:text-sm font-semibold shadow-sm hover:bg-emerald-300 transition-colors"
+                            >
+                                Apply Now
+                            </Link>
+                        </div>
+                    </div>
+                </div>
                 <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-blue-50 border-b border-indigo-100">
                     <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-indigo-100/50 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-blue-100/40 blur-3xl" />
@@ -201,11 +288,10 @@ export default function Home() {
                                     </span>
                                 </div>
                                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-indigo-900 leading-tight">
-                                    Fuel inspiring initiatives with{' '}
-                                    <span className="text-indigo-600">$5,000 impact grants</span>
+                                    Ma’a Impact Innovation Prize
                                 </h1>
                                 <p className="text-base md:text-lg text-indigo-800 max-w-xl">
-                                    Supporting ethical startups and non-profits to scale their work, powered by GlobalSadaqah&apos;s global crowdfunding platform.
+                                    Empowering ventures and projects that create lasting change. Open to projects from any country.
                                 </p>
                                 <p className="text-xs md:text-sm text-indigo-700 max-w-md">
                                     Inspired by the classical meaning of Ma&apos;a, the inseparable bond between effort and support.
@@ -215,7 +301,7 @@ export default function Home() {
                                         href={applyHref}
                                         className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
                                     >
-                                        Start Your Impact Journey Today
+                                        Apply Now
                                     </Link>
                                     <Link
                                         href="/faq"
@@ -259,13 +345,95 @@ export default function Home() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="rounded-xl bg-indigo-50/70 px-4 py-3 text-sm text-indigo-900">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-semibold">Next milestone</span>
-                                            <span className="text-indigo-700">Week 1 of Ramadan</span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="py-12 md:py-20 bg-gradient-to-br from-indigo-50/60 via-white to-sky-50/60">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="grid gap-10 md:grid-cols-2 items-start">
+                            <div>
+                                <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700 mb-3">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                                    <span className="tracking-[0.18em] uppercase">
+                                        Who should apply
+                                    </span>
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-4">
+                                    Who Should Apply?
+                                </h2>
+                                <p className="text-slate-700 text-sm md:text-base mb-6 max-w-xl">
+                                    Ma’a Prize is designed for mission-driven builders and movers using technology and impactful models to uplift the Ummah. Whether you have a long track record or are just starting out, we want to support your good work.
+                                </p>
+                                <div className="space-y-2 text-slate-700 text-sm md:text-base mb-4">
+                                    <p>
+                                        <span className="font-semibold">Any Stage:</span>{' '}
+                                        We welcome small, early-stage or established applicants. Impact is what matters most.
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Any Country:</span>{' '}
+                                        This is a global call for applications.
+                                    </p>
+                                    <p>
+                                        <span className="font-semibold">Entities Only:</span>{' '}
+                                        Open to registered organizations and project groups.{' '}
+                                        <span className="italic text-amber-700 font-medium">
+                                            We do not accept applications from individuals.
+                                        </span>
+                                    </p>
+                                </div>
+                                <div className="inline-flex flex-wrap gap-2">
+                                    <span className="px-3 py-1 rounded-full bg-white/80 border border-indigo-100 text-[11px] font-semibold text-indigo-700">
+                                        Early-stage teams
+                                    </span>
+                                    <span className="px-3 py-1 rounded-full bg-white/80 border border-indigo-100 text-[11px] font-semibold text-indigo-700">
+                                        Growth-stage projects
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="bg-white/90 rounded-2xl border border-indigo-100 shadow-lg shadow-indigo-100/60 p-5 md:p-6">
+                                <div className="mb-4 flex items-center gap-2">
+                                    <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold">
+                                        ✓
+                                    </div>
+                                    <p className="text-sm font-semibold text-indigo-900">
+                                        You’re a good fit if you are:
+                                    </p>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
+                                            01
                                         </div>
-                                        <p className="mt-1.5 text-sm text-indigo-800">
-                                            Shortlisted campaigns go live on GlobalSadaqah and begin receiving support.
+                                        <p className="text-sm md:text-base text-slate-700">
+                                            Tech Startups creating scalable impact for the Ummah.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
+                                            02
+                                        </div>
+                                        <p className="text-sm md:text-base text-slate-700">
+                                            Impact-focused organizations addressing real social or spiritual needs.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
+                                            03
+                                        </div>
+                                        <p className="text-sm md:text-base text-slate-700">
+                                            Projects serving overlooked or forgotten causes within the Ummah.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
+                                            04
+                                        </div>
+                                        <p className="text-sm md:text-base text-slate-700">
+                                            Innovators with proven or emerging solutions ready to scale impact.
                                         </p>
                                     </div>
                                 </div>
@@ -274,91 +442,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="py-12 md:py-16">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] items-center">
-                            <div className="space-y-5 lg:pr-8">
-                                <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                                    <span className="tracking-[0.18em] uppercase">
-                                        From vision to victory
-                                    </span>
-                                </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-indigo-900">
-                                    Fuel your impact with a global stage.
-                                </h2>
-                                <p className="text-slate-700 text-base md:text-lg max-w-2xl">
-                                    Turn your vision into a global movement. The Ma&apos;a Impact Prize rewards ethical startups and non-profits with{' '}
-                                    <span className="font-semibold">$5,000 grants</span> to scale their work.
-                                </p>
-                                <p className="text-slate-600 text-sm md:text-base max-w-2xl">
-                                    Every qualifying applicant gets a live campaign on GlobalSadaqah, giving you a real chance to turn inspiring initiatives into lasting impact.
-                                </p>
-                                <div className="flex flex-wrap gap-2 pt-2">
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 border border-indigo-100 px-3 py-1 text-xs font-medium text-indigo-800">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                        <span>Ethical startups</span>
-                                    </span>
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 border border-indigo-100 px-3 py-1 text-xs font-medium text-indigo-800">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                        <span>Non-profits</span>
-                                    </span>
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 border border-indigo-100 px-3 py-1 text-xs font-medium text-indigo-800">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                        <span>Faith-driven projects</span>
-                                    </span>
-                                </div>
-                            </div>
 
-                            <div className="bg-white rounded-2xl shadow-sm border border-indigo-50 p-6 md:p-7 space-y-4">
-                                <h3 className="text-sm font-semibold text-indigo-900">
-                                    What this prize unlocks
-                                </h3>
-                                <div className="space-y-3 text-sm text-slate-800">
-                                    <div className="flex gap-3">
-                                        <div className="mt-1 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
-                                            🌍
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-indigo-900 text-sm">
-                                                Global visibility
-                                            </p>
-                                            <p className="mt-1.5 text-sm text-indigo-800">
-                                                Your campaign is hosted on GlobalSadaqah, reaching donors and supporters worldwide.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {/* <div className="flex gap-3">
-                                        <div className="mt-1 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
-                                            💰
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-indigo-900 text-sm">
-                                                Real fundraising momentum
-                                            </p>
-                                            <p className="mt-1.5 text-sm text-indigo-800">
-                                                Raise funds during Ramadan while competing for dedicated prize funding.
-                                            </p>
-                                        </div>
-                                    </div> */}
-                                    <div className="flex gap-3">
-                                        <div className="mt-1 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
-                                            ⭐
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-indigo-900 text-sm">
-                                                Expert-backed recognition
-                                            </p>
-                                            <p className="mt-1.5 text-sm text-indigo-800">
-                                                Stand out to judges and partners who are looking for high-potential, values-driven initiatives.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
                 <section className="py-10 md:py-16 bg-white">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -484,78 +568,6 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="py-12 md:py-20 bg-gradient-to-br from-indigo-50/60 via-white to-sky-50/60">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid gap-10 md:grid-cols-2 items-start">
-                            <div>
-                                <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700 mb-3">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                                    <span className="tracking-[0.18em] uppercase">
-                                        Who should apply
-                                    </span>
-                                </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-4">
-                                    Who Should Apply?
-                                </h2>
-                                <p className="text-slate-700 text-sm md:text-base mb-6 max-w-xl">
-                                    Ma’a Impact is designed for mission-driven builders who are using technology and impactful models to uplift the Ummah.
-                                </p>
-                                <div className="inline-flex flex-wrap gap-2">
-                                    <span className="px-3 py-1 rounded-full bg-white/80 border border-indigo-100 text-[11px] font-semibold text-indigo-700">
-                                        Early-stage teams
-                                    </span>
-                                    <span className="px-3 py-1 rounded-full bg-white/80 border border-indigo-100 text-[11px] font-semibold text-indigo-700">
-                                        Growth-stage projects
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="bg-white/90 rounded-2xl border border-indigo-100 shadow-lg shadow-indigo-100/60 p-5 md:p-6">
-                                <div className="mb-4 flex items-center gap-2">
-                                    <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold">
-                                        ✓
-                                    </div>
-                                    <p className="text-sm font-semibold text-indigo-900">
-                                        You’ll feel at home here if you are:
-                                    </p>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
-                                            01
-                                        </div>
-                                        <p className="text-sm md:text-base text-slate-700">
-                                            Tech Startups creating scalable impact for the Ummah.
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
-                                            02
-                                        </div>
-                                        <p className="text-sm md:text-base text-slate-700">
-                                            Impact-focused organizations addressing real social or spiritual needs.
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
-                                            03
-                                        </div>
-                                        <p className="text-sm md:text-base text-slate-700">
-                                            Projects serving overlooked or forgotten causes within the Ummah.
-                                        </p>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-semibold text-indigo-700">
-                                            04
-                                        </div>
-                                        <p className="text-sm md:text-base text-slate-700">
-                                            Innovators with proven or emerging solutions ready to scale impact.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
                 <section className="py-10 md:py-14 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-900">
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -585,139 +597,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="py-10 md:py-16 bg-gray-50">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-10 md:grid-cols-2">
-                        <div>
-                            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-100/70 px-3 py-1 text-[11px] font-semibold text-indigo-800 mb-3">
-                                <span className="h-1.5 w-1.5 rounded-full bg-indigo-600" />
-                                <span className="tracking-[0.18em] uppercase">
-                                    How it works
-                                </span>
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 mb-3">
-                                The GlobalSadaqah path from idea to impact
-                            </h2>
-                            <p className="text-slate-700 mb-6 text-sm md:text-base">
-                                We&apos;ve partnered with GlobalSadaqah so your project gets the visibility it deserves. Your application isn&apos;t just a file; it becomes a live campaign with real supporters.
-                            </p>
-                            <ol className="space-y-4 text-sm text-slate-800">
-                                <li className="flex gap-3">
-                                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
-                                        1
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            Apply and Build
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            Submit your application and a 2 minute video about your initiatives and impact goals.
-                                        </p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-3">
-                                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
-                                        2
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            Share and Rally
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            On 25 February to 4 March 2026 The Ma’a leaderboard will be live for public voting . Share your Global Sadaqah page and rally your community to support and vote.
-                                        </p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-3">
-                                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
-                                        3
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            The Top 30
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            The top 10 most-voted projects from 3 categories will advance to form our Top 30 Finalists. This exclusive shortlist will be presented to our expert judging panel for a comprehensive evaluation.
-                                        </p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-3">
-                                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
-                                        4
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            The Final 15
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            From this elite group, judges will select five winners per category based on demonstrable impact and pioneering innovation. Each winner will be awarded a $5,000 prize to further their mission, with the official announcement scheduled for March 11 2026.
-                                        </p>
-                                    </div>
-                                </li>
-                            </ol>
-                        </div>
-
-                        <div className="bg-white rounded-2xl border border-indigo-50 shadow-sm p-6 md:p-8 flex flex-col gap-5">
-                            <div>
-                                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-800 mb-2">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                    <span className="tracking-[0.18em] uppercase">
-                                        Why this matters
-                                    </span>
-                                </div>
-                                <h2 className="text-2xl font-bold text-indigo-900 mb-2">
-                                    More than a prize, it&apos;s ongoing barakah
-                                </h2>
-                                <p className="text-sm italic text-indigo-800 mb-2">
-                                    &quot;Wealth does not decrease by giving Sadaqah.&quot;
-                                </p>
-                                <p className="text-sm text-slate-700">
-                                    By participating, you are not just applying for a grant. You are:
-                                </p>
-                            </div>
-                            <div className="space-y-3 text-sm text-slate-800">
-                                <div className="flex gap-3">
-                                    <div className="mt-0.5 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
-                                        ✅
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            Gaining trust
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            Using GlobalSadaqah&apos;s verified platform to signal credibility to donors and partners.
-                                        </p>
-                                    </div>
-                                </div>
-                                {/* <div className="flex gap-3">
-                                    <div className="mt-0.5 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
-                                        💸
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            Raising meaningful funds
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            Collecting donations from a global audience during the most generous month of the year.
-                                        </p>
-                                    </div>
-                                </div> */}
-                                <div className="flex gap-3">
-                                    <div className="mt-0.5 h-7 w-7 rounded-full bg-indigo-50 flex items-center justify-center text-xs text-indigo-700">
-                                        🤝
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-indigo-900">
-                                            Building community
-                                        </p>
-                                        <p className="mt-1 text-slate-700">
-                                            Turning one-time supporters into long-term stakeholders who believe in your mission.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                {/* <HowItWorks /> */}
 
                 <section className="py-10 md:py-16 bg-white">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -726,14 +606,14 @@ export default function Home() {
                                 <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700">
                                     <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
                                     <span className="tracking-[0.18em] uppercase">
-                                        Key dates
+                                        The roadmap
                                     </span>
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-bold text-indigo-900">
                                     Key dates &amp; next steps
                                 </h2>
                                 <p className="text-slate-700 text-sm md:text-base">
-                                    Mark your calendar, prepare your materials, and plan your campaign moments around these milestones.
+                                    Follow the key milestones from submission to final selection and announcement.
                                 </p>
                             </div>
                             <div className="text-xs md:text-sm text-indigo-800">
@@ -749,62 +629,91 @@ export default function Home() {
                                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
                                     <div className="flex items-center justify-between mb-1">
                                         <p className="text-[11px] font-semibold text-indigo-600 uppercase">
-                                            Call for submissions
+                                            Step 1: Submissions open
                                         </p>
                                         <span className="hidden lg:inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-indigo-100 text-[11px] font-semibold text-indigo-700">
                                             01
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        Now until 24 February 2026
+                                        20 – 27 February 2026
+                                    </p>
+                                    <p className="text-xs text-slate-600 mt-1.5">
+                                        Submit your project profile and a 1-minute pitch video.
                                     </p>
                                 </div>
 
                                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
                                     <div className="flex items-center justify-between mb-1">
                                         <p className="text-[11px] font-semibold text-indigo-600 uppercase">
-                                            Shortlisting
+                                            Step 2: Voting starts
                                         </p>
                                         <span className="hidden lg:inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-indigo-100 text-[11px] font-semibold text-indigo-700">
                                             02
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        25 February 2026
+                                        2 – 7 March 2026
+                                    </p>
+                                    <p className="text-xs text-slate-600 mt-1.5">
+                                        Your profile goes live. Rally your community to vote and support your cause.
                                     </p>
                                 </div>
 
                                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
                                     <div className="flex items-center justify-between mb-1">
                                         <p className="text-[11px] font-semibold text-indigo-600 uppercase">
-                                            Public voting phase
+                                            Step 3: Final selection
                                         </p>
                                         <span className="hidden lg:inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-indigo-100 text-[11px] font-semibold text-indigo-700">
                                             03
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        Week 2 of Ramadan
+                                        Final judging round
                                     </p>
                                     <p className="text-xs text-slate-600 mt-1.5">
-                                        25 February to 4 March 2026.
+                                        The top 10 voted projects from each track move to the final judging round.
                                     </p>
                                 </div>
 
                                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
                                     <div className="flex items-center justify-between mb-1">
                                         <p className="text-[11px] font-semibold text-indigo-600 uppercase">
-                                            Winner announcement
+                                            Step 4: Winners announced
                                         </p>
                                         <span className="hidden lg:inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-indigo-100 text-[11px] font-semibold text-indigo-700">
                                             04
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        11 March 2026 (21st Ramadan)
+                                        11 March 2026 / 21 Ramadan
+                                    </p>
+                                    <p className="text-xs text-slate-600 mt-1.5">
+                                        15 winners are selected to receive $5,000 each.
                                     </p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                
+                <section className="py-10 md:py-16 bg-gradient-to-r from-indigo-900 via-indigo-800 to-indigo-900">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                        <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-white mb-3 md:mb-4">
+                            We want to reward the good you do, in this world and the next
+                        </h2>
+                        <p className="text-indigo-100 text-sm md:text-base mb-6">
+                            Submit your application before the deadline.
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <Link
+                                href={applyHref}
+                                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-indigo-900 text-sm font-semibold shadow-md hover:bg-indigo-50 transition-colors"
+                            >
+                                Apply Now
+                            </Link>
                         </div>
                     </div>
                 </section>
@@ -965,6 +874,7 @@ export default function Home() {
                 </section>
 
                 {/* <HeroSection profiles={profiles} /> */}
+
 
                 <JudgesSection judges={judges} loading={loadingJudges} />
 

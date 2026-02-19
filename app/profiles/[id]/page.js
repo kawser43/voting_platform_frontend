@@ -52,7 +52,12 @@ export default function PublicProfilePage() {
 
     const handleVote = async () => {
         if (!isLoggedIn) {
-            router.push('/auth/login');
+            setAlertState({
+                open: true,
+                title: 'Register or Login to Vote',
+                message: 'You need an account to vote for this organization.',
+                type: 'info'
+            });
             return;
         }
         if (user?.account_type === 'submitter') {
@@ -231,6 +236,32 @@ export default function PublicProfilePage() {
                 message={alertState.message}
                 type={alertState.type}
                 onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+                actions={
+                    alertState.title === 'Register or Login to Vote'
+                        ? (
+                            <>
+                                <Link
+                                    href="/auth/register"
+                                    className="w-full inline-flex items-center justify-center px-4 py-2 rounded-md bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
+                                >
+                                    Register to Vote
+                                </Link>
+                                <Link
+                                    href="/auth/login"
+                                    className="w-full inline-flex items-center justify-center px-4 py-2 rounded-md border border-indigo-200 text-indigo-700 text-sm font-medium bg-white hover:bg-indigo-50 transition-colors"
+                                >
+                                    Login to Vote
+                                </Link>
+                                <button
+                                    onClick={() => setAlertState(prev => ({ ...prev, open: false }))}
+                                    className="w-full inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700"
+                                >
+                                    Maybe later
+                                </button>
+                            </>
+                        )
+                        : undefined
+                }
             />
 
             {/* Hero Section */}
@@ -388,7 +419,9 @@ export default function PublicProfilePage() {
 
                             <div className="space-y-12">
                                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Share</div>
+                                    <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
+                                        Share to help get more votes
+                                    </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         <button
                                             onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener')}

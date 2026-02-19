@@ -1,5 +1,18 @@
-_ Vote and profile submission email 
-- Lets remove the potential to raise funds on GS completely for now. Yes
-- 
-
 project name: Ma'a Impact Award
+
+- Sticky count down banner for submission end time
+- Vote and profile submission email 
+- Contrast issue on dark mode 
+
+- Show a popup to guest user while voting - Register to vote 
+- Share to help get more votes [ share text ]
+- FAQ page should be public
+
+- Highlight vote counts on card 
+
+- Create seperate sendgrid contacts list and sync emails to it 
+
+- If the organization got same amount of votes for leaderboard. 
+
+# Conditions
+- User can vote multiple organization

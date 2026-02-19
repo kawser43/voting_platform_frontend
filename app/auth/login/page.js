@@ -32,7 +32,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="auth-page min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                 <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -40,7 +40,7 @@ export default function LoginPage() {
                 <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
             </div>
 
-            <div className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-lg p-8 rounded-2xl shadow-xl border border-white/20 z-10 relative">
+            <div className="auth-card max-w-md w-full space-y-8 backdrop-blur-lg p-8 rounded-2xl shadow-xl border z-10 relative">
                 <div className="text-center">
                     <Link href="/" className="inline-block mb-4">
                          <div className="mx-auto h-12 w-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
@@ -49,25 +49,25 @@ export default function LoginPage() {
                             </svg>
                         </div>
                     </Link>
-                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                    <h2 className="text-3xl font-extrabold tracking-tight">
                         Welcome Back
                     </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="auth-subtitle mt-2 text-sm">
                         Sign in to access your dashboard
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form className="auth-form mt-8 space-y-6" onSubmit={handleSubmit}>
                     {error && (
-                        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md animate-pulse">
+                        <div className="auth-error-alert p-4 rounded-md animate-pulse">
                             <div className="flex">
                                 <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg className="auth-error-icon h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                     </svg>
                                 </div>
                                 <div className="ml-3">
-                                    <p className="text-sm text-red-700 font-medium">
+                                    <p className="auth-error-text text-sm font-medium">
                                         {error}
                                     </p>
                                 </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+                            <label htmlFor="email-address" className="block text-sm font-medium mb-1">Email address</label>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,13 +128,13 @@ export default function LoginPage() {
                                 type="checkbox"
                                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                             />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 cursor-pointer">
+                            <label htmlFor="remember-me" className="ml-2 block text-sm cursor-pointer">
                                 Remember me
                             </label>
                         </div>
 
                         <div className="text-sm">
-                            <Link href="/forget-password" className="font-medium text-indigo-600 hover:text-indigo-500 hover:underline">
+                            <Link href="/forget-password" className="auth-link font-medium hover:underline">
                                 Forgot password?
                             </Link>
                         </div>
@@ -166,9 +166,9 @@ export default function LoginPage() {
                     </div>
                     
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm auth-helper-text">
                             Don't have an account?{' '}
-                            <Link href="/auth/register" className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline transition-colors">
+                            <Link href="/auth/register" className="auth-link font-semibold hover:underline transition-colors">
                                 Create an account
                             </Link>
                         </p>
@@ -177,7 +177,7 @@ export default function LoginPage() {
             </div>
             
             {/* Simple footer */}
-            <div className="absolute bottom-4 text-center text-xs text-gray-400">
+            <div className="auth-footer-text absolute bottom-4 text-center text-xs">
                 &copy; {new Date().getFullYear()} Voting Platform. All rights reserved.
             </div>
         </div>

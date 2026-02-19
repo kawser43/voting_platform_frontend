@@ -16,6 +16,7 @@ const appConfig = Object.freeze({
         '/',
         '/leaderboard',
         '/profiles',
+        '/faq',
         '/why-join-us',
         '/contents',
     ],

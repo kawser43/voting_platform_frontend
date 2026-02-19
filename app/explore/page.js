@@ -1,4 +1,5 @@
 'use client';
+'use client';
 import Axios from '@/Helper/Axios';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -10,11 +11,17 @@ export default function ExploreOrganizationsPage() {
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('all');
 
-    const fetchProfiles = async (pageNumber = 1, searchQuery = '') => {
+    const fetchProfiles = async (pageNumber = 1, searchQuery = '', categorySlug = selectedCategory) => {
         setLoading(true);
         try {
-            const query = new URLSearchParams({ page: pageNumber, search: searchQuery }).toString();
+            const params = new URLSearchParams({ page: pageNumber, search: searchQuery });
+            if (categorySlug && categorySlug !== 'all') {
+                params.set('category_slug', categorySlug);
+            }
+            const query = params.toString();
             const { data } = await Axios.get(`/profiles?${query}`);
             if (data.status) {
                 setProfiles(data.data.profiles.data);
@@ -28,13 +35,31 @@ export default function ExploreOrganizationsPage() {
         }
     };
 
+    const fetchCategories = async () => {
+        try {
+            const { data } = await Axios.get('/categories');
+            if (data.status) {
+                setCategories(data.data || []);
+            }
+        } catch (err) {
+            console.error("Error fetching categories", err);
+        }
+    };
+
     useEffect(() => {
-        fetchProfiles();
+        fetchCategories();
+        fetchProfiles(1, '', 'all');
     }, []);
 
     const handleSearch = (e) => {
         e.preventDefault();
         fetchProfiles(1, search);
+    };
+
+    const handleCategoryChange = (slug) => {
+        const nextSlug = slug || 'all';
+        setSelectedCategory(nextSlug);
+        fetchProfiles(1, search, nextSlug);
     };
 
     const handleScrollToOrganizations = () => {
@@ -87,6 +112,9 @@ export default function ExploreOrganizationsPage() {
                 page={page}
                 lastPage={lastPage}
                 fetchProfiles={fetchProfiles}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={handleCategoryChange}
             />
         </div>
     );

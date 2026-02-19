@@ -11,33 +11,12 @@ export default function Leaderboard() {
     const fetchCategoryLeaderboards = async () => {
         setLoading(true);
         try {
-            const { data } = await Axios.get('/categories');
+            const { data } = await Axios.get('/leaderboard');
             if (data.status) {
-                const fetchedCategories = data.data || [];
-                setCategories(fetchedCategories);
+                const apiCategories = data.data?.categories || [];
+                setCategories(apiCategories);
 
-                if (fetchedCategories.length === 0) {
-                    setCategoryLeaderboards([]);
-                    setLoading(false);
-                    return;
-                }
-
-                const perPage = 50;
-                const requests = fetchedCategories.map((category) => {
-                    const params = new URLSearchParams({
-                        page: '1',
-                        per_page: String(perPage),
-                        category_slug: category.slug,
-                    });
-                    return Axios.get(`/profiles?${params.toString()}`);
-                });
-
-                const responses = await Promise.all(requests);
-
-                const boards = responses.map((response, index) => {
-                    const category = fetchedCategories[index];
-                    const apiData = response.data;
-                    const profiles = apiData?.data?.profiles?.data || [];
+                const boards = apiCategories.map((category, index) => {
                     const trackLabel = `Track ${String(index + 1).padStart(2, '0')}`;
 
                     let subtitle = 'Top organizations in this category';
@@ -54,7 +33,7 @@ export default function Leaderboard() {
                         title: category.name,
                         trackLabel,
                         subtitle,
-                        profiles,
+                        profiles: category.profiles || [],
                     };
                 });
 
@@ -165,16 +144,16 @@ export default function Leaderboard() {
                                                 >
                                                     <div
                                                         className={`font-bold w-8 text-lg mr-2 ${
-                                                            index === 0
+                                                            profile.rank === 1
                                                                 ? 'text-yellow-500'
-                                                                : index === 1
+                                                                : profile.rank === 2
                                                                     ? 'text-gray-400'
-                                                                    : index === 2
+                                                                    : profile.rank === 3
                                                                         ? 'text-amber-600'
                                                                         : 'text-indigo-300'
                                                         }`}
                                                     >
-                                                        #{String(index + 1).padStart(2, '0')}
+                                                        #{String(profile.rank).padStart(2, '0')}
                                                     </div>
 
                                                     <div className="relative w-10 h-10 flex-shrink-0 mr-4">

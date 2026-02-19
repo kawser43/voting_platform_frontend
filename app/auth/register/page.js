@@ -56,7 +56,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="auth-page min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
              {/* Background decoration */}
              <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -64,7 +64,7 @@ export default function RegisterPage() {
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
             </div>
 
-            <div className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-lg p-8 rounded-2xl shadow-xl border border-white/20 z-10 relative">
+            <div className="auth-card max-w-md w-full space-y-8 backdrop-blur-lg p-8 rounded-2xl shadow-xl border z-10 relative">
                 <div className="text-center">
                     <Link href="/" className="inline-block mb-4">
                          <div className="mx-auto h-12 w-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
@@ -73,25 +73,25 @@ export default function RegisterPage() {
                             </svg>
                         </div>
                     </Link>
-                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-                        Create Account
+                    <h2 className="text-3xl font-extrabold tracking-tight">
+                        Create an account to get votes or to start voting
                     </h2>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Join us to start voting for your favorite organizations
+                    <p className="auth-subtitle mt-2 text-sm">
+                        All Ma’a prize applicants must register to be considered
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+                <form className="auth-form mt-8 space-y-5" onSubmit={handleSubmit}>
                     {error && (
-                        <div ref={errorRef} className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                        <div ref={errorRef} className="auth-error-alert p-4 rounded-md">
                             <div className="flex">
                                 <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg className="auth-error-icon h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                     </svg>
                                 </div>
                                 <div className="ml-3">
-                                    <p className="text-sm text-red-700 font-medium">
+                                    <p className="auth-error-text text-sm font-medium">
                                         {error}
                                     </p>
                                 </div>
@@ -101,7 +101,7 @@ export default function RegisterPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="full-name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <label htmlFor="full-name" className="block text-sm font-medium mb-1">Full Name</label>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -123,7 +123,7 @@ export default function RegisterPage() {
                         </div>
                         {/* Account Type */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Choose Account Type</label>
+                            <label className="block text-sm font-medium mb-1">Choose Account Type</label>
                             <div className="grid grid-cols-1 gap-3">
                                 <button
                                     type="button"
@@ -138,8 +138,8 @@ export default function RegisterPage() {
                                         <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-medium text-gray-900">I want to submit my organization profile</p>
-                                        <p className="text-xs text-gray-500 mt-1">Create and manage a submission.</p>
+                                        <p className="font-medium">I want to submit my organization profile</p>
+                                        <p className="auth-helper-text text-xs mt-1">Create and manage a submission.</p>
                                     </div>
                                 </button>
                                 <button
@@ -155,13 +155,13 @@ export default function RegisterPage() {
                                         <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-medium text-gray-900">I want to vote only</p>
-                                        <p className="text-xs text-gray-500 mt-1">Vote for one organization profile.</p>
+                                        <p className="font-medium">I want to vote</p>
+                                        <p className="auth-helper-text text-xs mt-1">Help your favourite organisations win the Ma&apos;a Prize</p>
                                     </div>
                                 </button>
                             </div>
                             {!formData.account_type && (
-                                <p className="text-xs text-red-600 mt-1">Please choose an account type.</p>
+                                <p className="auth-error-text text-xs mt-1">Please choose an account type.</p>
                             )}
                         </div>
 
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                         {formData.account_type === 'submitter' && (
                             <>
                                 <div>
-                                    <label htmlFor="designation" className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                                    <label htmlFor="designation" className="block text-sm font-medium mb-1">Designation</label>
                                     <div className="relative rounded-md shadow-sm">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -189,7 +189,7 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number (Optional)</label>
+                                    <label htmlFor="whatsapp" className="block text-sm font-medium mb-1">WhatsApp Number (Optional)</label>
                                     <div className="relative rounded-md shadow-sm">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -207,13 +207,13 @@ export default function RegisterPage() {
                                             onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
                                         />
                                     </div>
-                                    <p className="mt-1 text-xs text-gray-500">Optional. Include country code, e.g., +971...</p>
+                                    <p className="auth-helper-text mt-1 text-xs">Optional. Include country code, e.g., +971...</p>
                                 </div>
                             </>
                         )}
 
                         <div>
-                            <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+                            <label htmlFor="email-address" className="block text-sm font-medium mb-1">Email address</label>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,7 +256,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                            <label htmlFor="password-confirm" className="block text-sm font-medium mb-1">Confirm Password</label>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg className={`h-5 w-5 ${passwordsMatch ? 'text-green-500' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -302,9 +302,9 @@ export default function RegisterPage() {
                         </button>
                     </div>
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm auth-helper-text">
                             Already have an account?{' '}
-                            <Link href="/auth/login" className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline transition-colors">
+                            <Link href="/auth/login" className="auth-link font-semibold hover:underline transition-colors">
                                 Sign in instead
                             </Link>
                         </p>
@@ -328,7 +328,7 @@ export default function RegisterPage() {
             )}
             
             {/* Simple footer */}
-            <div className="absolute bottom-4 text-center text-xs text-gray-400">
+            <div className="auth-footer-text absolute bottom-4 text-center text-xs">
                 &copy; {new Date().getFullYear()} Voting Platform. All rights reserved.
             </div>
         </div>
