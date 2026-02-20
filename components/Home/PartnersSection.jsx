@@ -49,7 +49,7 @@ export default function PartnersSection({ partners, loading }) {
                         {partners.map((partner) => (
                             <SwiperSlide key={partner.id}>
                                 <div className="group flex flex-col items-center justify-center p-4 transition-all duration-300">
-                                    <div className="relative w-32 h-20 flex items-center justify-center grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-110">
+                                    <div className="relative w-32 h-20 flex items-center justify-center transition-all duration-500 transform group-hover:scale-110">
                                         {partner.logo ? (
                                             <img 
                                                 src={partner.logo} 
