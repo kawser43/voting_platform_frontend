@@ -350,19 +350,19 @@ export default function SubmissionPage() {
                         </div>
                     </div>
 
-                    {/* Founder Video */}
+                    {/* Founder / Explainer Video */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Link to Founder Video (YouTube, max 2 min)</label>
+                        <label className="block text-sm font-medium text-gray-700">Link to Founder/ explainer Video (max 2 min)</label>
                         <input 
                             type="url" 
                             name="founder_video_url" 
                             value={formData.founder_video_url} 
                             onChange={handleChange}
                             required
-                            placeholder="https://www.youtube.com/watch?v=..."
+                            placeholder="https://example.com/your-video-link"
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                         />
-                        <p className="text-xs text-gray-500">Must be a YouTube link.</p>
+                        <p className="text-xs text-gray-500">Ensure that permission to view is set to open.</p>
                     </div>
 
                     {/* Pitch Deck */}

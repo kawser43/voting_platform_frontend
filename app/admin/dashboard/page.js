@@ -621,7 +621,7 @@ export default function AdminDashboard() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Founder Video (YouTube)</label>
+                                <label className="block text-sm font-medium text-gray-700">Link to Founder/ explainer Video (max 2 min)</label>
                                 <input 
                                     type="url" 
                                     value={editModal.data.founder_video_url}
@@ -850,7 +850,7 @@ export default function AdminDashboard() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Founder Video (YouTube)</label>
+                                        <label className="block text-sm font-medium text-gray-700">Link to Founder/ explainer Video (max 2 min)</label>
                                         <input 
                                             type="url" 
                                             value={addData.founder_video_url}

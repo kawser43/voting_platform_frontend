@@ -639,7 +639,7 @@ export default function Home() {
                                         20 – 27 February 2026
                                     </p>
                                     <p className="text-xs text-slate-600 mt-1.5">
-                                        Submit your project profile and a 1-minute pitch video.
+                                        Submit your project profile and a 2-minute pitch video.
                                     </p>
                                 </div>
 

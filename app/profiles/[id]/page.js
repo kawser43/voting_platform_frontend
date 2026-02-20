@@ -542,26 +542,45 @@ export default function PublicProfilePage() {
                                          dangerouslySetInnerHTML={{ __html: renderContent(profile.summary || "No summary provided.") }} />
                                 </section>
 
-                                {profile.founder_video_url && getYouTubeEmbedUrl(profile.founder_video_url) && (
+                                {profile.founder_video_url && (
                                     <section>
                                         <div className="flex items-center mb-4">
                                             <div className="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center mr-4">
                                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.26a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>
                                             </div>
-                                            <h2 className="text-xl font-bold text-gray-900 m-0">Founder Video</h2>
+                                            <h2 className="text-xl font-bold text-gray-900 m-0">Founder / Explainer Video</h2>
                                         </div>
-                                        <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                                            <div className="relative pt-[56.25%]">
-                                                <iframe
-                                                    className="absolute inset-0 w-full h-full"
-                                                    src={getYouTubeEmbedUrl(profile.founder_video_url)}
-                                                    title="Founder Video"
-                                                    frameBorder="0"
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                    allowFullScreen
-                                                />
+                                        {getYouTubeEmbedUrl(profile.founder_video_url) ? (
+                                            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                                                <div className="relative pt-[56.25%]">
+                                                    <iframe
+                                                        className="absolute inset-0 w-full h-full"
+                                                        src={getYouTubeEmbedUrl(profile.founder_video_url)}
+                                                        title="Founder Video"
+                                                        frameBorder="0"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                        allowFullScreen
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 flex items-center justify-between flex-wrap gap-4">
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900">External video link</p>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        Opens in a new tab. Ensure viewing permissions are set to open.
+                                                    </p>
+                                                </div>
+                                                <a
+                                                    href={profile.founder_video_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center px-4 py-2 rounded-md bg-rose-600 text-white text-sm font-medium hover:bg-rose-700 transition-colors"
+                                                >
+                                                    Watch video
+                                                </a>
+                                            </div>
+                                        )}
                                     </section>
                                 )}
 
