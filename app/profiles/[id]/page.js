@@ -6,6 +6,9 @@ import { useUser } from '@/context/UserContext';
 import Link from 'next/link';
 import AlertModal from '@/components/AlertModal';
 
+const VOTING_START_DATE = process.env.NEXT_PUBLIC_VOTING_START_DATE;
+const VOTING_END_DATE = process.env.NEXT_PUBLIC_VOTING_END_DATE;
+
 export default function PublicProfilePage() {
     const { id } = useParams();
     const router = useRouter();
@@ -51,6 +54,53 @@ export default function PublicProfilePage() {
     }, []);
 
     const handleVote = async () => {
+        const now = new Date();
+        let votingStart = null;
+        let votingEndExclusive = null;
+
+        if (VOTING_START_DATE && VOTING_END_DATE) {
+            const start = new Date(VOTING_START_DATE);
+            const end = new Date(VOTING_END_DATE);
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                votingStart = start;
+                votingEndExclusive = new Date(end.getTime());
+                votingEndExclusive.setDate(votingEndExclusive.getDate() + 1);
+                votingEndExclusive.setHours(0, 0, 0, 0);
+            }
+        }
+
+        if (!votingStart || !votingEndExclusive) {
+            const currentYear = now.getFullYear();
+            votingStart = new Date(currentYear, 2, 2);
+            votingEndExclusive = new Date(currentYear, 2, 8);
+        }
+
+        const startLabel = votingStart.toLocaleDateString(undefined, {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        if (now < votingStart) {
+            setAlertState({
+                open: true,
+                title: 'Voting Not Started',
+                message: `Voting will start on ${startLabel}.`,
+                type: 'info'
+            });
+            return;
+        }
+
+        if (now >= votingEndExclusive) {
+            setAlertState({
+                open: true,
+                title: 'Voting Ended',
+                message: 'Voting has ended.',
+                type: 'info'
+            });
+            return;
+        }
+
         if (!isLoggedIn) {
             setAlertState({
                 open: true,
