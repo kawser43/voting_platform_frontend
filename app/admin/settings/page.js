@@ -10,6 +10,7 @@ export default function AdminSettings() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [changingPassword, setChangingPassword] = useState(false);
     const [settings, setSettings] = useState({
         hero_title: 'Vote for Your <br class="hidden lg:block" /> <span class="text-indigo-600">Favorite Organization</span>',
         hero_subtitle: 'Browse impactful organizations and support the initiatives that resonate with you.',
@@ -22,6 +23,12 @@ export default function AdminSettings() {
         message: '',
         type: 'success'
     });
+    const [passwordForm, setPasswordForm] = useState({
+        current_password: '',
+        password: '',
+        password_confirmation: ''
+    });
+    const [passwordError, setPasswordError] = useState(null);
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -83,6 +90,35 @@ export default function AdminSettings() {
             });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setChangingPassword(true);
+        setPasswordError(null);
+        try {
+            const { data } = await Axios.post('/change-password', passwordForm);
+            if (data.status) {
+                setAlertState({
+                    open: true,
+                    title: 'Success',
+                    message: 'Password updated successfully',
+                    type: 'success'
+                });
+                setPasswordForm({
+                    current_password: '',
+                    password: '',
+                    password_confirmation: ''
+                });
+            } else {
+                setPasswordError(data.message || 'Failed to update password');
+            }
+        } catch (err) {
+            const message = err.response?.data?.message || 'Failed to update password';
+            setPasswordError(message);
+        } finally {
+            setChangingPassword(false);
         }
     };
 
@@ -156,6 +192,56 @@ export default function AdminSettings() {
                             className="bg-indigo-600 text-white px-6 py-2 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
                             {saving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">Change Password</h2>
+                {passwordError && (
+                    <div className="mb-4 rounded-md bg-red-50 border-l-4 border-red-500 p-4">
+                        <p className="text-sm text-red-700">{passwordError}</p>
+                    </div>
+                )}
+                <form onSubmit={handlePasswordChange} className="space-y-6 max-w-lg">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Current password</label>
+                        <input
+                            type="password"
+                            value={passwordForm.current_password}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, current_password: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
+                        <input
+                            type="password"
+                            value={passwordForm.password}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, password: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm new password</label>
+                        <input
+                            type="password"
+                            value={passwordForm.password_confirmation}
+                            onChange={(e) => setPasswordForm(prev => ({ ...prev, password_confirmation: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                            required
+                        />
+                    </div>
+                    <div className="pt-2 flex justify-end">
+                        <button
+                            type="submit"
+                            disabled={changingPassword}
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                        >
+                            {changingPassword ? 'Updating...' : 'Update Password'}
                         </button>
                     </div>
                 </form>
