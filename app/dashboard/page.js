@@ -255,16 +255,18 @@ export default function DashboardPage() {
                             </div>
                         </div>
 
-                        {/* Quick Help Card */}
-                        <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
-                            <h3 className="text-sm font-semibold text-indigo-900 uppercase tracking-wide mb-3">Need Help?</h3>
-                            <p className="text-sm text-indigo-700 mb-4">
-                                If you have questions about the submission process or criteria, please check our guidelines.
-                            </p>
-                            <Link href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 hover:underline">
-                                Read Submission Guidelines &rarr;
-                            </Link>
-                        </div>
+                        {/* Quick Help Card (submitters only) */}
+                        {user?.account_type === 'submitter' && (
+                            <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                                <h3 className="text-sm font-semibold text-indigo-900 uppercase tracking-wide mb-3">Need Help?</h3>
+                                <p className="text-sm text-indigo-700 mb-4">
+                                    If you have questions about the submission process or criteria, please check our guidelines.
+                                </p>
+                                <Link href="/faq" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 hover:underline">
+                                    Read Submission Guidelines &rarr;
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
