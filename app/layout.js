@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteTitle = "Ma'a Impact Award by GlobalSadaqah";
+const siteTitle = "Ma'a Impact Prize by GlobalSadaqah";
 const siteDescription =
-  "Ma'a Impact Award by GlobalSadaqah – empowering ethical startups and non-profits with $5,000 impact grants across three impact tracks.";
+  "Ma'a Impact Prize by GlobalSadaqah – empowering ethical startups and non-profits with $5,000 impact grants across three impact tracks.";
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://maaimpact.com";
 
 export const metadata = {

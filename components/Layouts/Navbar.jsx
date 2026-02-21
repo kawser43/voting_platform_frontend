@@ -22,11 +22,11 @@ export default function Navbar() {
                             <div className="flex flex-col items-start leading-tight">
                                 <img
                                     src="/globalsadaqah-logo.webp"
-                                    alt="Ma'a Impact Award"
+                                    alt="Ma'a Impact Prize"
                                     className="h-8 w-auto"
                                 />
                                 <span className="text-xs font-semibold text-indigo-900 mt-0.5">
-                                    Ma&apos;a Impact Award
+                                    Ma&apos;a Impact Prize
                                 </span>
                             </div>
                         </Link>

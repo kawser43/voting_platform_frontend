@@ -78,7 +78,7 @@ export default function ExploreOrganizationsPage() {
                             Explore Organizations
                         </p>
                         <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-indigo-900 leading-tight mb-4">
-                            Discover inspiring organizations in the Ma&apos;a Impact Award.
+                            Discover inspiring organizations in the Ma&apos;a Impact Prize.
                         </h1>
                         <p className="text-base md:text-lg text-indigo-800 max-w-xl mb-6">
                             Browse all participating organizations, learn about their work, and support the causes that matter most to you.
