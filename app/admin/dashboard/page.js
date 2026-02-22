@@ -2,7 +2,7 @@
 import Axios from '@/Helper/Axios';
 import { useEffect, useState } from 'react';
 import { useUser } from '@/context/UserContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import SearchableSelect from '@/components/inputs/SearchableSelect';
 import RichTextLimited from '@/components/inputs/RichTextLimited';
@@ -11,9 +11,12 @@ import AlertModal from '@/components/AlertModal';
 export default function AdminDashboard() {
     const { user, isLoggedIn } = useUser();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [profiles, setProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('pending');
+    const [page, setPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
     const [actionLoading, setActionLoading] = useState(null);
     const [rejectModal, setRejectModal] = useState({ open: false, id: null, reason: '' });
     const [confirmModal, setConfirmModal] = useState({ 
@@ -96,18 +99,39 @@ export default function AdminDashboard() {
         fetchCountries();
         fetchCategories();
         if (!isLoggedIn) {
-            // router.push('/auth/login'); // Handled by context usually, but good fallback
         } else if (user && user.role_id !== 1) {
             router.push('/dashboard');
         }
     }, [isLoggedIn, user, router]);
 
-    const fetchProfiles = async () => {
+    useEffect(() => {
+        const statusFromUrl = searchParams.get('status') || 'pending';
+        const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+        const allowedStatuses = ['pending', 'approved', 'rejected'];
+        const normalizedStatus = allowedStatuses.includes(statusFromUrl) ? statusFromUrl : 'pending';
+        const normalizedPage = Number.isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
+        setStatusFilter(normalizedStatus);
+        setPage(normalizedPage);
+    }, [searchParams]);
+
+    const fetchProfiles = async (statusParam = statusFilter, pageParam = page) => {
         setLoading(true);
         try {
-            const { data } = await Axios.get(`/admin/profiles?status=${statusFilter}`);
+            const params = new URLSearchParams();
+            if (statusParam) {
+                params.set('status', statusParam);
+            }
+            if (pageParam && pageParam > 1) {
+                params.set('page', String(pageParam));
+            }
+            const query = params.toString();
+            const url = query ? `/admin/profiles?${query}` : '/admin/profiles';
+            const { data } = await Axios.get(url);
             if (data.status) {
-                setProfiles(data.data.data);
+                const paginated = data.data;
+                setProfiles(paginated.data || []);
+                setPage(paginated.current_page || 1);
+                setLastPage(paginated.last_page || 1);
             }
         } catch (err) {
             console.error(err);
@@ -120,7 +144,27 @@ export default function AdminDashboard() {
         if (user?.role_id === 1) {
             fetchProfiles();
         }
-    }, [statusFilter, user]);
+    }, [statusFilter, page, user]);
+
+    const handleStatusTabClick = (status) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('status', status);
+        params.delete('page');
+        const query = params.toString();
+        router.push(query ? `/admin/dashboard?${query}` : '/admin/dashboard');
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage < 1 || newPage === page) return;
+        const params = new URLSearchParams(searchParams.toString());
+        if (newPage <= 1) {
+            params.delete('page');
+        } else {
+            params.set('page', String(newPage));
+        }
+        const query = params.toString();
+        router.push(query ? `/admin/dashboard?${query}` : '/admin/dashboard');
+    };
 
     const handleApprove = (id) => {
         setConfirmModal({
@@ -396,7 +440,7 @@ export default function AdminDashboard() {
                 {['pending', 'approved', 'rejected'].map((status) => (
                     <button
                         key={status}
-                        onClick={() => setStatusFilter(status)}
+                        onClick={() => handleStatusTabClick(status)}
                         className={`py-4 px-6 font-medium text-sm focus:outline-none capitalize ${
                             statusFilter === status
                                 ? 'border-b-2 border-indigo-500 text-indigo-600'
@@ -495,6 +539,28 @@ export default function AdminDashboard() {
             ) : (
                 <div className="text-center py-12 text-gray-500">
                     No {statusFilter} profiles found.
+                </div>
+            )}
+
+            {!loading && lastPage > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                    <button
+                        onClick={() => handlePageChange(page - 1)}
+                        disabled={page === 1}
+                        className="px-3 py-1.5 text-xs rounded-md border bg-white text-gray-700 disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-xs text-gray-500">
+                        Page {page} of {lastPage}
+                    </span>
+                    <button
+                        onClick={() => handlePageChange(page + 1)}
+                        disabled={page === lastPage}
+                        className="px-3 py-1.5 text-xs rounded-md border bg-white text-gray-700 disabled:opacity-50"
+                    >
+                        Next
+                    </button>
                 </div>
             )}
 
