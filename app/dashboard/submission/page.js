@@ -156,6 +156,47 @@ export default function SubmissionPage() {
         }
     };
 
+    const collectErrorMessages = (payload, fallback) => {
+        if (!payload) {
+            return [fallback];
+        }
+
+        const collected = [];
+        const { errors, message } = payload;
+
+        if (errors) {
+            if (Array.isArray(errors)) {
+                errors.forEach((err) => {
+                    if (typeof err === 'string') {
+                        collected.push(err);
+                    }
+                });
+            } else if (typeof errors === 'object') {
+                Object.values(errors).forEach((value) => {
+                    if (Array.isArray(value)) {
+                        value.forEach((msg) => {
+                            if (typeof msg === 'string') {
+                                collected.push(msg);
+                            }
+                        });
+                    } else if (typeof value === 'string') {
+                        collected.push(value);
+                    }
+                });
+            }
+        }
+
+        if (!collected.length && typeof message === 'string' && message.trim()) {
+            collected.push(message);
+        }
+
+        if (!collected.length) {
+            collected.push(fallback);
+        }
+
+        return collected;
+    };
+
     const handleSubmit = async (e, saveAsDraft = false) => {
         e.preventDefault();
         setLoading(true);
@@ -202,12 +243,15 @@ export default function SubmissionPage() {
                 setTimeout(() => setShowToast(false), 5000);
                 setTimeout(() => router.push('/dashboard'), 1500);
             } else {
-                setError(res.data.message || 'Submission failed');
+                const messages = collectErrorMessages(res.data, 'Submission failed');
+                setError(messages);
                 setShowToast(true);
                 setTimeout(() => setShowToast(false), 5000);
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred during submission');
+            const responseData = err.response?.data;
+            const messages = collectErrorMessages(responseData, 'An error occurred during submission');
+            setError(messages);
             setShowToast(true);
             setTimeout(() => setShowToast(false), 5000);
         } finally {
@@ -226,7 +270,10 @@ export default function SubmissionPage() {
     return (
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="max-w-3xl mx-auto bg-white shadow rounded-lg p-6">
-                <h1 className="text-2xl font-bold mb-6">Submission Profile</h1>
+                <h1 className="text-2xl font-bold mb-2">Submission Profile</h1>
+                <p className="text-sm text-gray-600 mb-4">
+                    Fields marked as required must be filled in when you Save &amp; Submit.
+                </p>
                 
                 {status === 'approved' && (
                     <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
@@ -252,16 +299,33 @@ export default function SubmissionPage() {
                 
                 {(error || success) && (
                     <div ref={messageRef}>
-                        {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
-                        {success && <div className="bg-green-100 text-green-700 p-3 rounded mb-4">{success}</div>}
+                        {Array.isArray(error) && error.length > 0 && (
+                            <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm space-y-1">
+                                <p className="font-semibold">Please fix the following:</p>
+                                <ul className="list-disc list-inside space-y-0.5">
+                                    {error.map((msg, idx) => (
+                                        <li key={idx}>{msg}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {!Array.isArray(error) && error && (
+                            <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+                                {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">
+                                {success}
+                            </div>
+                        )}
                     </div>
                 )}
 
                 <form onSubmit={(e) => handleSubmit(e, false)}>
                     <fieldset disabled={status === 'approved'} className="space-y-4">
-                    {/* Organization Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Organization Name</label>
+                        <label className="block text-sm font-medium text-gray-700">Organization Name (required)</label>
                         <input 
                             type="text" 
                             name="organization_name" 
@@ -271,9 +335,8 @@ export default function SubmissionPage() {
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                         />
                     </div>
-                    {/* Country */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Country</label>
+                        <label className="block text-sm font-medium text-gray-700">Country (required)</label>
                         <SearchableSelect
                             items={countries}
                             getLabel={(c) => `${c.name}${c.iso2 ? ` (${c.iso2})` : ''}`}
@@ -285,9 +348,8 @@ export default function SubmissionPage() {
                         />
                     </div>
 
-                    {/* Category */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Category</label>
+                        <label className="block text-sm font-medium text-gray-700">Category (required)</label>
                         <SearchableSelect
                             items={categories}
                             getLabel={(c) => c.name}
@@ -299,9 +361,8 @@ export default function SubmissionPage() {
                         />
                     </div>
 
-                    {/* Logo */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Logo</label>
+                        <label className="block text-sm font-medium text-gray-700">Logo (required)</label>
                         <input 
                             type="file" 
                             accept="image/*"
@@ -311,9 +372,8 @@ export default function SubmissionPage() {
                         {preview && <img src={preview} alt="Logo Preview" className="mt-2 h-20 w-auto object-contain rounded border" />}
                     </div>
 
-                    {/* Summary */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Short Organization Summary (max 300)</label>
+                        <label className="block text-sm font-medium text-gray-700">Short Organization Summary (max 300, required)</label>
                         <div className="mt-1">
                             <RichTextLimited 
                                 value={formData.summary}
@@ -324,9 +384,8 @@ export default function SubmissionPage() {
                         </div>
                     </div>
 
-                    {/* Why Win */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Why do you deserve to win? (max 300)</label>
+                        <label className="block text-sm font-medium text-gray-700">Why do you deserve to win? (max 300, required)</label>
                         <div className="mt-1">
                             <RichTextLimited 
                                 value={formData.why_win}
@@ -337,9 +396,8 @@ export default function SubmissionPage() {
                         </div>
                     </div>
 
-                    {/* How Help */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">How will this money help you? (max 300)</label>
+                        <label className="block text-sm font-medium text-gray-700">How will this money help you? (max 300, required)</label>
                         <div className="mt-1">
                             <RichTextLimited 
                                 value={formData.how_help}
@@ -350,9 +408,8 @@ export default function SubmissionPage() {
                         </div>
                     </div>
 
-                    {/* Founder / Explainer Video */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Link to Founder/ explainer Video (max 2 min)</label>
+                        <label className="block text-sm font-medium text-gray-700">Link to Founder/ explainer Video (max 2 min, required)</label>
                         <input 
                             type="url" 
                             name="founder_video_url" 
@@ -460,7 +517,9 @@ export default function SubmissionPage() {
                             <svg className="h-5 w-5 text-white mr-2" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                             </svg>
-                            <span className="text-sm font-medium truncate">{error || success}</span>
+                            <span className="text-sm font-medium truncate">
+                                {Array.isArray(error) && error.length > 0 ? error[0] : (error || success)}
+                            </span>
                         </div>
                         <button onClick={() => setShowToast(false)} className="ml-3 text-white/80 hover:text-white text-sm">
                             Dismiss

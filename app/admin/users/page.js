@@ -16,6 +16,60 @@ export default function AdminUsersPage() {
     const [editModal, setEditModal] = useState({ open: false, id: null, data: { name: '', designation: '', whatsapp: '', role_id: 2, account_type: '' } });
     const [savingEdit, setSavingEdit] = useState(false);
 
+    const renderProfileStatus = (u) => {
+        if (u.account_type !== 'submitter') {
+            return <span className="text-xs text-gray-400">N/A</span>;
+        }
+
+        const status = u.profile_status || 'not_submitted';
+
+        if (status === 'not_submitted') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    Not submitted
+                </span>
+            );
+        }
+
+        if (status === 'draft') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                    Draft
+                </span>
+            );
+        }
+
+        if (status === 'pending') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    Pending
+                </span>
+            );
+        }
+
+        if (status === 'approved') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    Approved
+                </span>
+            );
+        }
+
+        if (status === 'rejected') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    Rejected
+                </span>
+            );
+        }
+
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 capitalize">
+                {status}
+            </span>
+        );
+    };
+
     useEffect(() => {
         if (!isLoggedIn) {
             return;
@@ -133,6 +187,7 @@ export default function AdminUsersPage() {
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Account Type</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile Status</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -170,6 +225,9 @@ export default function AdminUsersPage() {
                                                     <option value="submitter">Submitter</option>
                                                     <option value="voter">Voter</option>
                                                 </select>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {renderProfileStatus(u)}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <select

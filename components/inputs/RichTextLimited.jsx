@@ -66,7 +66,15 @@ export default function RichTextLimited({ value = '', onChange, maxLength = 300,
       </div>
       <div className="px-3 py-2">
         {textLen === 0 && (
-          <div className="text-gray-400 text-sm select-none pointer-events-none">{placeholder}</div>
+          <div
+            className="text-gray-400 text-sm select-none cursor-text mb-1"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              editor.chain().focus().run();
+            }}
+          >
+            {placeholder}
+          </div>
         )}
         <EditorContent editor={editor} />
       </div>
