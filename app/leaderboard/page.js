@@ -21,7 +21,7 @@ export default function Leaderboard() {
 
                     let subtitle = 'Top organizations in this category';
                     if (category.slug === 'for-profit') {
-                        subtitle = 'Ethical enterprise';
+                        subtitle = 'Ethical Startup';
                     } else if (category.slug === 'non-profit-organisation') {
                         subtitle = 'Pure service';
                     } else if (category.slug === 'ibadah-support') {

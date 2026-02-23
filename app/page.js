@@ -138,7 +138,7 @@ export default function Home() {
 
                     let subtitle = 'Top organizations in this category';
                     if (category.slug === 'for-profit') {
-                        subtitle = 'Ethical enterprise';
+                        subtitle = 'Ethical Startup';
                     } else if (category.slug === 'non-profit-organisation') {
                         subtitle = 'Pure service';
                     } else if (category.slug === 'ibadah-support') {
@@ -488,7 +488,7 @@ export default function Home() {
                                     For-Profit
                                 </h3>
                                 <p className="text-xs font-semibold text-indigo-700 mt-1">
-                                    Ethical enterprise
+                                    Ethical startup
                                 </p>
                                 <p className="text-sm text-slate-700 mt-2 mb-6">
                                     Startups balancing profit with social purpose and delivering sustainable impact.
