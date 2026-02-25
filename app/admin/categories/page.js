@@ -144,9 +144,9 @@ export default function CategoriesPage() {
                             <li key={category.id} className="p-4 sm:p-6">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center space-x-2">
                                             <h3 className="text-lg font-medium text-gray-900">{category.name}</h3>
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                                 category.is_active
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-gray-100 text-gray-600'
@@ -155,6 +155,20 @@ export default function CategoriesPage() {
                                             </span>
                                         </div>
                                         <p className="text-xs text-gray-500 mt-1">Slug: {category.slug}</p>
+                                        <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                                            <span className="flex items-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                                Pending: {category.pending_count || 0}
+                                            </span>
+                                            <span className="flex items-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                Approved: {category.approved_count || 0}
+                                            </span>
+                                            <span className="flex items-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                                Rejected: {category.rejected_count || 0}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="flex space-x-2">
                                         <button

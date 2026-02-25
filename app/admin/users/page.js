@@ -188,6 +188,7 @@ export default function AdminUsersPage() {
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Account Type</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile Status</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -228,6 +229,9 @@ export default function AdminUsersPage() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 {renderProfileStatus(u)}
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500">
+                                                {u.profile_category || '-'}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <select
