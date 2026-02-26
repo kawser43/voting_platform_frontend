@@ -1,6 +1,6 @@
 'use client';
 import Axios from '@/Helper/Axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 
@@ -10,11 +10,13 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [profileStatusFilter, setProfileStatusFilter] = useState('');
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [updatingId, setUpdatingId] = useState(null);
     const [editModal, setEditModal] = useState({ open: false, id: null, data: { name: '', designation: '', whatsapp: '', role_id: 2, account_type: '' } });
     const [savingEdit, setSavingEdit] = useState(false);
+    const searchTimeoutRef = useRef(null);
 
     const renderProfileStatus = (u) => {
         if (u.account_type !== 'submitter') {
@@ -79,10 +81,17 @@ export default function AdminUsersPage() {
         }
     }, [isLoggedIn, user, router]);
 
-    const fetchUsers = async (pageParam = 1, searchParam = '') => {
+    const fetchUsers = async (pageParam = 1, searchParam = search, statusParam = profileStatusFilter) => {
         setLoading(true);
         try {
-            const { data } = await Axios.get(`/admin/all-users?page=${pageParam}&search=${encodeURIComponent(searchParam)}`);
+            const params = new URLSearchParams({
+                page: pageParam,
+                search: searchParam
+            });
+            if (statusParam) {
+                params.append('profile_status', statusParam);
+            }
+            const { data } = await Axios.get(`/admin/all-users?${params.toString()}`);
             if (data.status) {
                 setUsers(data.data.data || []);
                 setPage(data.data.current_page);
@@ -97,17 +106,21 @@ export default function AdminUsersPage() {
 
     useEffect(() => {
         if (isLoggedIn && user?.role_id === 1) {
-            fetchUsers(1, '');
+            fetchUsers(1, search, profileStatusFilter);
         }
-    }, [isLoggedIn, user]);
+    }, [isLoggedIn, user, profileStatusFilter]); // Re-fetch when filter changes
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
         setSearch(value);
-        const timeout = setTimeout(() => {
-            fetchUsers(1, value);
+        
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            fetchUsers(1, value, profileStatusFilter);
         }, 400);
-        return () => clearTimeout(timeout);
     };
 
     const handleUpdateUser = async (id, payload) => {
@@ -168,7 +181,19 @@ export default function AdminUsersPage() {
                         <h1 className="text-2xl font-bold text-gray-900">Users</h1>
                         <p className="text-sm text-gray-500">Manage registered users and their roles.</p>
                     </div>
-                    <div className="w-full max-w-xs">
+                    <div className="w-full max-w-md flex space-x-2">
+                        <select
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                            value={profileStatusFilter}
+                            onChange={(e) => setProfileStatusFilter(e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="not_submitted">Not Submitted</option>
+                            <option value="draft">Draft</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
                         <input
                             type="text"
                             placeholder="Search by name or email..."
