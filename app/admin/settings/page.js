@@ -29,6 +29,7 @@ export default function AdminSettings() {
         password_confirmation: ''
     });
     const [passwordError, setPasswordError] = useState(null);
+    const [syncingSendGrid, setSyncingSendGrid] = useState(false);
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -122,6 +123,40 @@ export default function AdminSettings() {
         }
     };
 
+    const handleSyncSendGrid = async () => {
+        if (syncingSendGrid) return;
+        setSyncingSendGrid(true);
+        try {
+            const { data } = await Axios.post('/admin/sync-sendgrid');
+            if (data.status) {
+                const { synced, failed, total_attempted } = data.data;
+                setAlertState({
+                    open: true,
+                    title: 'Sync Completed',
+                    message: `Synced: ${synced}, Failed: ${failed}, Total Processed: ${total_attempted}`,
+                    type: 'success'
+                });
+            } else {
+                setAlertState({
+                    open: true,
+                    title: 'Sync Failed',
+                    message: data.message || 'Failed to sync contacts',
+                    type: 'error'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: 'Failed to initiate sync',
+                type: 'error'
+            });
+        } finally {
+            setSyncingSendGrid(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Loading Settings...</div>;
 
     return (
@@ -135,6 +170,36 @@ export default function AdminSettings() {
             />
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Site Settings</h1>
             
+            {/* Integrations */}
+            <div className="bg-white shadow rounded-lg p-6 mb-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Integrations</h2>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-medium text-gray-900">SendGrid Contacts Sync</h3>
+                        <p className="text-sm text-gray-500">
+                            Sync verified users to your SendGrid marketing contacts list.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleSyncSendGrid}
+                        disabled={syncingSendGrid}
+                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center"
+                    >
+                        {syncingSendGrid ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Syncing...
+                            </>
+                        ) : (
+                            'Sync Contacts'
+                        )}
+                    </button>
+                </div>
+            </div>
+
             <div className="bg-white shadow rounded-lg p-6 mb-8">
                 <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">Hero Section Content</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
