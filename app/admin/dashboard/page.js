@@ -7,6 +7,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import SearchableSelect from '@/components/inputs/SearchableSelect';
 import RichTextLimited from '@/components/inputs/RichTextLimited';
 import AlertModal from '@/components/AlertModal';
+import Link from 'next/link';
 
 export default function AdminDashboard() {
     const { user, isLoggedIn } = useUser();
@@ -427,12 +428,20 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                <button 
-                    onClick={() => setAddModal({ open: true })}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-medium"
-                >
-                    Add Profile
-                </button>
+                <div className="flex items-center gap-3">
+                    <Link
+                        href="/admin/emails"
+                        className="bg-white text-indigo-700 border border-indigo-200 px-4 py-2 rounded hover:bg-indigo-50 font-medium"
+                    >
+                        Send Email
+                    </Link>
+                    <button 
+                        onClick={() => setAddModal({ open: true })}
+                        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-medium"
+                    >
+                        Add Profile
+                    </button>
+                </div>
             </div>
 
             {/* Filter Tabs */}
