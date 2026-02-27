@@ -352,6 +352,8 @@ export default function Home() {
                     </div>
                 </section>
 
+                <PartnersSection partners={partners} loading={loadingPartners} />
+
                 <section className="py-12 md:py-20 bg-gradient-to-br from-indigo-50/60 via-white to-sky-50/60">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="grid gap-10 md:grid-cols-2 items-start">
@@ -877,8 +879,6 @@ export default function Home() {
 
 
                 <JudgesSection judges={judges} loading={loadingJudges} />
-
-                <PartnersSection partners={partners} loading={loadingPartners} />
             </main>
         </div>
     );
