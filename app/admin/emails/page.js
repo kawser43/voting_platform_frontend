@@ -55,7 +55,7 @@ export default function AdminEmailPage() {
           title: 'Email Queued',
           message: testMode
             ? 'Test email has been queued for delivery.'
-            : `Emails have been queued to ${audience === 'all' ? 'all users' : audience}.`,
+            : `Emails have been queued to ${audience === 'all' ? 'all users' : (audience === 'approved_profile' ? 'approved profile users' : audience)}.`,
           type: 'success',
         });
         // Keep content for reuse; optionally clear subject/content
@@ -103,6 +103,7 @@ export default function AdminEmailPage() {
               <option value="all">All users</option>
               <option value="submitter">Submitter</option>
               <option value="voter">Voter</option>
+              <option value="approved_profile">Approved Profile Users</option>
             </select>
           </div>
           <div className="flex items-end">
