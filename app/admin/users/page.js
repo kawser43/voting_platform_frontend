@@ -8,14 +8,17 @@ export default function AdminUsersPage() {
     const { user, isLoggedIn } = useUser();
     const router = useRouter();
     const [users, setUsers] = useState([]);
+    const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [profileStatusFilter, setProfileStatusFilter] = useState('');
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [updatingId, setUpdatingId] = useState(null);
-    const [editModal, setEditModal] = useState({ open: false, id: null, data: { name: '', designation: '', whatsapp: '', role_id: 2, account_type: '' } });
+    const [editModal, setEditModal] = useState({ open: false, id: null, data: { name: '', designation: '', whatsapp: '', role_id: '', account_type: '' } });
     const [savingEdit, setSavingEdit] = useState(false);
+    const [addModal, setAddModal] = useState({ open: false, data: { name: '', email: '', password: '', role_id: '', account_type: '' } });
+    const [savingAdd, setSavingAdd] = useState(false);
     const searchTimeoutRef = useRef(null);
 
     const renderProfileStatus = (u) => {
@@ -76,7 +79,7 @@ export default function AdminUsersPage() {
         if (!isLoggedIn) {
             return;
         }
-        if (user && user.role_id !== 1) {
+        if (user && !user.role_id) {
             router.push('/dashboard');
         }
     }, [isLoggedIn, user, router]);
@@ -105,10 +108,22 @@ export default function AdminUsersPage() {
     };
 
     useEffect(() => {
-        if (isLoggedIn && user?.role_id === 1) {
+        if (isLoggedIn && user?.role_id) {
             fetchUsers(1, search, profileStatusFilter);
+            fetchRoles();
         }
     }, [isLoggedIn, user, profileStatusFilter]); // Re-fetch when filter changes
+
+    const fetchRoles = async () => {
+        try {
+            const { data } = await Axios.get('/admin/roles');
+            if (data.status) {
+                setRoles(data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching roles', err);
+        }
+    };
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
@@ -169,7 +184,29 @@ export default function AdminUsersPage() {
         }
     };
 
-    if (!isLoggedIn || (user && user.role_id !== 1)) {
+    const openAddModal = () => {
+        setAddModal({
+            open: true,
+            data: { name: '', email: '', password: '', role_id: '', account_type: '' }
+        });
+    };
+
+    const submitAdd = async () => {
+        setSavingAdd(true);
+        try {
+            const { data } = await Axios.post('/admin/users', addModal.data);
+            if (data.status) {
+                setUsers(prev => [data.data, ...prev]);
+                setAddModal({ open: false, data: { name: '', email: '', password: '', role_id: '', account_type: '' } });
+            }
+        } catch (err) {
+            console.error('Failed to create user', err);
+        } finally {
+            setSavingAdd(false);
+        }
+    };
+
+    if (!isLoggedIn || (user && !user.role_id)) {
         return null;
     }
 
@@ -180,6 +217,14 @@ export default function AdminUsersPage() {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Users</h1>
                         <p className="text-sm text-gray-500">Manage registered users and their roles.</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={openAddModal}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700"
+                        >
+                            Add User
+                        </button>
                     </div>
                     <div className="w-full max-w-md flex space-x-2">
                         <select
@@ -261,12 +306,14 @@ export default function AdminUsersPage() {
                                             <td className="px-4 py-3">
                                                 <select
                                                     className="border-gray-300 rounded-md text-xs px-2 py-1"
-                                                    value={u.role_id}
-                                                    onChange={(e) => handleUpdateUser(u.id, { role_id: Number(e.target.value) })}
+                                                    value={u.role_id || ''}
+                                                    onChange={(e) => handleUpdateUser(u.id, { role_id: e.target.value ? Number(e.target.value) : null })}
                                                     disabled={updatingId === u.id}
                                                 >
-                                                    <option value={1}>Admin</option>
-                                                    <option value={2}>User</option>
+                                                    <option value="">User</option>
+                                                    {roles.map(role => (
+                                                        <option key={role.id} value={role.id}>{role.name}</option>
+                                                    ))}
                                                 </select>
                                             </td>
                                             <td className="px-4 py-3">
@@ -340,11 +387,13 @@ export default function AdminUsersPage() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                                     <select
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                        value={editModal.data.role_id}
-                                        onChange={(e) => setEditModal(prev => ({ ...prev, data: { ...prev.data, role_id: Number(e.target.value) } }))}
+                                        value={editModal.data.role_id || ''}
+                                        onChange={(e) => setEditModal(prev => ({ ...prev, data: { ...prev.data, role_id: e.target.value ? Number(e.target.value) : null } }))}
                                     >
-                                        <option value={1}>Admin</option>
-                                        <option value={2}>User</option>
+                                        <option value="">User</option>
+                                        {roles.map(role => (
+                                            <option key={role.id} value={role.id}>{role.name}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
@@ -392,6 +441,84 @@ export default function AdminUsersPage() {
                                     disabled={savingEdit}
                                 >
                                     {savingEdit ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {addModal.open && (
+                    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add User</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={addModal.data.name}
+                                        onChange={(e) => setAddModal(prev => ({ ...prev, data: { ...prev.data, name: e.target.value } }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={addModal.data.email}
+                                        onChange={(e) => setAddModal(prev => ({ ...prev, data: { ...prev.data, email: e.target.value } }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <input
+                                        type="password"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={addModal.data.password}
+                                        onChange={(e) => setAddModal(prev => ({ ...prev, data: { ...prev.data, password: e.target.value } }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                                    <select
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={addModal.data.role_id || ''}
+                                        onChange={(e) => setAddModal(prev => ({ ...prev, data: { ...prev.data, role_id: e.target.value ? Number(e.target.value) : null } }))}
+                                    >
+                                        <option value="">User</option>
+                                        {roles.map(role => (
+                                            <option key={role.id} value={role.id}>{role.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                                    <select
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={addModal.data.account_type || ''}
+                                        onChange={(e) => setAddModal(prev => ({ ...prev, data: { ...prev.data, account_type: e.target.value || '' } }))}
+                                    >
+                                        <option value="">Not set</option>
+                                        <option value="submitter">Submitter</option>
+                                        <option value="voter">Voter</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="mt-6 flex justify-end space-x-2">
+                                <button
+                                    onClick={() => setAddModal({ open: false, data: { name: '', email: '', password: '', role_id: '', account_type: '' } })}
+                                    className="px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    disabled={savingAdd}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={submitAdd}
+                                    className="px-4 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
+                                    disabled={savingAdd}
+                                >
+                                    {savingAdd ? 'Creating...' : 'Create User'}
                                 </button>
                             </div>
                         </div>

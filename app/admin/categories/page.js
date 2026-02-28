@@ -23,7 +23,7 @@ export default function CategoriesPage() {
 
     useEffect(() => {
         if (!isLoggedIn) {
-        } else if (user && user.role_id !== 1) {
+        } else if (user && !user.role_id) {
             router.push('/dashboard');
         }
     }, [isLoggedIn, user, router]);
@@ -43,7 +43,7 @@ export default function CategoriesPage() {
     };
 
     useEffect(() => {
-        if (user?.role_id === 1) {
+        if (user?.role_id) {
             fetchCategories();
         }
     }, [user]);
@@ -115,7 +115,7 @@ export default function CategoriesPage() {
         });
     };
 
-    if (!user || user.role_id !== 1) {
+    if (!user || !user.role_id) {
         return <div className="p-8 text-center">Loading...</div>;
     }
 
@@ -145,7 +145,12 @@ export default function CategoriesPage() {
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                         <div className="flex items-center space-x-2">
-                                            <h3 className="text-lg font-medium text-gray-900">{category.name}</h3>
+                                            <h3 
+                                                className="text-lg font-medium text-gray-900 cursor-pointer hover:text-indigo-600 hover:underline"
+                                                onClick={() => router.push(`/admin/dashboard?category_id=${category.id}`)}
+                                            >
+                                                {category.name}
+                                            </h3>
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                                 category.is_active
                                                     ? 'bg-green-100 text-green-800'
@@ -168,6 +173,17 @@ export default function CategoriesPage() {
                                                 <span className="w-2 h-2 rounded-full bg-red-500"></span>
                                                 Rejected: {category.rejected_count || 0}
                                             </span>
+                                        </div>
+                                        <div className="mt-2">
+                                            <button
+                                                onClick={() => router.push(`/admin/dashboard?category_id=${category.id}`)}
+                                                className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
+                                            >
+                                                View Profiles
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">

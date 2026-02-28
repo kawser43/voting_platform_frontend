@@ -11,7 +11,7 @@ export default function DashboardLayout({ children }) {
         if (!isLoading) {
             if (!isLoggedIn) {
                 router.push('/auth/login');
-            } else if (user && user.role_id === 1) {
+            } else if (user && user.role_id) {
                 // If admin, redirect to admin dashboard
                 router.push('/admin/dashboard');
             }
@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }) {
     }
 
     // While redirecting or if invalid, show nothing or loading
-    if (!isLoggedIn || (user && user.role_id === 1)) {
+    if (!isLoggedIn || (user && user.role_id)) {
         return null;
     }
 

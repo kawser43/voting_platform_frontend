@@ -1,6 +1,6 @@
 'use client';
 import Axios from '@/Helper/Axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -15,10 +15,13 @@ export default function AdminDashboard() {
     const searchParams = useSearchParams();
     const [profiles, setProfiles] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [statusFilter, setStatusFilter] = useState('pending');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [search, setSearch] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [actionLoading, setActionLoading] = useState(null);
+    const searchTimeoutRef = useRef(null);
     const [rejectModal, setRejectModal] = useState({ open: false, id: null, reason: '' });
     const [confirmModal, setConfirmModal] = useState({ 
         open: false, 
@@ -81,6 +84,13 @@ export default function AdminDashboard() {
 
     // Redirect if not admin
     useEffect(() => {
+        if (!isLoggedIn || !user || !user.role_id) {
+            if (user && !user.role_id) {
+                router.push('/dashboard');
+            }
+            return;
+        }
+
         const fetchCountries = async () => {
             try {
                 const { data } = await Axios.get('/countries');
@@ -99,23 +109,25 @@ export default function AdminDashboard() {
         };
         fetchCountries();
         fetchCategories();
-        if (!isLoggedIn) {
-        } else if (user && user.role_id !== 1) {
-            router.push('/dashboard');
-        }
     }, [isLoggedIn, user, router]);
 
     useEffect(() => {
-        const statusFromUrl = searchParams.get('status') || 'pending';
+        const statusFromUrl = searchParams.get('status') || '';
         const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
-        const allowedStatuses = ['pending', 'approved', 'rejected'];
-        const normalizedStatus = allowedStatuses.includes(statusFromUrl) ? statusFromUrl : 'pending';
+        const searchFromUrl = searchParams.get('search') || '';
+        const categoryFromUrl = searchParams.get('category_id') || '';
+
+        const allowedStatuses = ['pending', 'approved', 'rejected', ''];
+        const normalizedStatus = allowedStatuses.includes(statusFromUrl) ? statusFromUrl : '';
         const normalizedPage = Number.isNaN(pageFromUrl) || pageFromUrl < 1 ? 1 : pageFromUrl;
+        
         setStatusFilter(normalizedStatus);
         setPage(normalizedPage);
+        setSearch(searchFromUrl);
+        setCategoryFilter(categoryFromUrl);
     }, [searchParams]);
 
-    const fetchProfiles = async (statusParam = statusFilter, pageParam = page) => {
+    const fetchProfiles = async (statusParam = statusFilter, pageParam = page, searchParam = search, categoryParam = categoryFilter) => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
@@ -124,6 +136,12 @@ export default function AdminDashboard() {
             }
             if (pageParam && pageParam > 1) {
                 params.set('page', String(pageParam));
+            }
+            if (searchParam) {
+                params.set('search', searchParam);
+            }
+            if (categoryParam) {
+                params.set('category_id', categoryParam);
             }
             const query = params.toString();
             const url = query ? `/admin/profiles?${query}` : '/admin/profiles';
@@ -142,10 +160,44 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        if (user?.role_id === 1) {
-            fetchProfiles();
+        if (user?.role_id) {
+            fetchProfiles(statusFilter, page, search, categoryFilter);
         }
-    }, [statusFilter, page, user]);
+    }, [statusFilter, page, user, categoryFilter]); // Trigger on filter change too, but debounce search separately
+
+    // Debounced search effect
+    useEffect(() => {
+        if (!user?.role_id) return;
+        
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            // Update URL which triggers main effect or call fetch directly
+            // Better to update URL to keep state in sync
+            const params = new URLSearchParams(searchParams.toString());
+            if (search) params.set('search', search);
+            else params.delete('search');
+            
+            // Reset page on search change
+            params.delete('page'); 
+            
+            const query = params.toString();
+            router.push(query ? `/admin/dashboard?${query}` : '/admin/dashboard');
+        }, 500);
+        
+        return () => clearTimeout(searchTimeoutRef.current);
+    }, [search]); // Only depend on search state
+
+    const handleFilterChange = (key, value) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) params.set(key, value);
+        else params.delete(key);
+        params.delete('page'); // Reset page
+        const query = params.toString();
+        router.push(query ? `/admin/dashboard?${query}` : '/admin/dashboard');
+    };
 
     const handleStatusTabClick = (status) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -420,7 +472,7 @@ export default function AdminDashboard() {
         }
     };
 
-    if (!user || user.role_id !== 1) {
+    if (!user || !user.role_id) {
         return <div className="p-8 text-center">Loading Admin Panel...</div>;
     }
 
@@ -444,21 +496,38 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex border-b border-gray-200 mb-8">
-                {['pending', 'approved', 'rejected'].map((status) => (
-                    <button
-                        key={status}
-                        onClick={() => handleStatusTabClick(status)}
-                        className={`py-4 px-6 font-medium text-sm focus:outline-none capitalize ${
-                            statusFilter === status
-                                ? 'border-b-2 border-indigo-500 text-indigo-600'
-                                : 'text-gray-500 hover:text-gray-700'
-                        }`}
+            {/* Filter Tabs & Search */ }
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <div className="flex gap-2 w-full md:w-auto">
+                    <select
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={statusFilter}
+                        onChange={(e) => handleFilterChange('status', e.target.value)}
                     >
-                        {status} Profiles
-                    </button>
-                ))}
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+
+                     <select
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        value={categoryFilter}
+                        onChange={(e) => handleFilterChange('category_id', e.target.value)}
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                    </select>
+                    <input
+                        type="text"
+                        placeholder="Search profiles..."
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 w-full md:w-64"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
             </div>
 
             {loading ? (
@@ -470,9 +539,18 @@ export default function AdminDashboard() {
                             <li key={profile.id} className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
-                                        <h3 className="text-lg font-medium text-gray-900">
-                                            {profile.organization_name}
-                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-lg font-medium text-gray-900">
+                                                {profile.organization_name}
+                                            </h3>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                profile.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                                profile.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {profile.status}
+                                            </span>
+                                        </div>
                                         <p className="text-sm text-gray-500">Submitted by: {profile.user?.name} ({profile.user?.email})</p>
                                         <p className="mt-2 text-sm text-gray-600 line-clamp-2">{profile.summary}</p>
                                         {profile.rejection_reason && (
@@ -489,7 +567,7 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div className="ml-4 flex items-center space-x-2">
-                                        {statusFilter === 'pending' && (
+                                        {profile.status === 'pending' && (
                                             <>
                                                 <button
                                                     onClick={() => openEditModal(profile)}
@@ -513,7 +591,7 @@ export default function AdminDashboard() {
                                                 </button>
                                             </>
                                         )}
-                                        {statusFilter === 'rejected' && (
+                                        {profile.status === 'rejected' && (
                                             <button
                                                 onClick={() => handleApprove(profile.id)} // Allow re-approving
                                                 disabled={actionLoading === profile.id}
@@ -522,7 +600,7 @@ export default function AdminDashboard() {
                                                 Approve
                                             </button>
                                         )}
-                                        {statusFilter === 'approved' && (
+                                        {profile.status === 'approved' && (
                                             <>
                                                 <button
                                                     onClick={() => openEditModal(profile)}

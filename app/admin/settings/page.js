@@ -34,7 +34,7 @@ export default function AdminSettings() {
     useEffect(() => {
         if (!isLoggedIn) {
             // router.push('/auth/login');
-        } else if (user && user.role_id !== 1) {
+        } else if (user && !user.role_id) {
             router.push('/dashboard');
         }
     }, [isLoggedIn, user, router]);
@@ -54,7 +54,7 @@ export default function AdminSettings() {
             }
         };
 
-        if (user?.role_id === 1) {
+        if (user?.role_id) {
             fetchSettings();
         }
     }, [user]);

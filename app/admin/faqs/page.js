@@ -29,7 +29,7 @@ export default function AdminFaqPage() {
         if (!isLoggedIn) {
             return;
         }
-        if (user && user.role_id !== 1) {
+        if (user && !user.role_id) {
             router.push('/dashboard');
         }
     }, [isLoggedIn, user, router]);
@@ -39,7 +39,7 @@ export default function AdminFaqPage() {
         try {
             const { data } = await Axios.get('/admin/faqs');
             if (data.status) {
-                setFaqs(data.data || []);
+                setFaqs(data.data);
             }
         } catch (err) {
             console.error(err);
@@ -49,7 +49,7 @@ export default function AdminFaqPage() {
     };
 
     useEffect(() => {
-        if (user?.role_id === 1) {
+        if (user?.role_id) {
             fetchFaqs();
         }
     }, [user]);
@@ -162,7 +162,7 @@ export default function AdminFaqPage() {
         }
     };
 
-    if (!user || user.role_id !== 1) {
+    if (!user || !user.role_id) {
         return <div className="p-8 text-center">Loading...</div>;
     }
 

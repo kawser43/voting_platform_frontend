@@ -25,7 +25,7 @@ export default function JudgesPage() {
     useEffect(() => {
         if (!isLoggedIn) {
             // router.push('/auth/login');
-        } else if (user && user.role_id !== 1) {
+        } else if (user && !user.role_id) {
             router.push('/dashboard');
         }
     }, [isLoggedIn, user, router]);
@@ -45,7 +45,7 @@ export default function JudgesPage() {
     };
 
     useEffect(() => {
-        if (user?.role_id === 1) {
+        if (user?.role_id) {
             fetchJudges();
         }
     }, [user]);
@@ -125,7 +125,7 @@ export default function JudgesPage() {
         });
     };
 
-    if (!user || user.role_id !== 1) {
+    if (!user || !user.role_id) {
         return <div className="p-8 text-center">Loading...</div>;
     }
 

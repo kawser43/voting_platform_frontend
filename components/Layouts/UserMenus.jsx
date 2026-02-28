@@ -7,7 +7,7 @@ export default function UserMenus({ toggleMobileMenu }) {
 
     return (
         <>
-            {user?.role_id === 1 ? (
+            {user?.role_id ? (
                 <Link 
                     href="/admin/dashboard" 
                     onClick={toggleMobileMenu} 

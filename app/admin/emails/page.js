@@ -29,7 +29,7 @@ export default function AdminEmailPage() {
       // Let layout handle redirect
       return;
     }
-    if (user && user.role_id !== 1) {
+    if (user && !user.role_id) {
       router.push('/dashboard');
     }
   }, [isLoggedIn, user, router]);
@@ -80,8 +80,8 @@ export default function AdminEmailPage() {
     }
   };
 
-  if (!user || user.role_id !== 1) {
-    return <div className="p-8 text-center">Loading Admin Panel...</div>;
+  if (!user || !user.role_id) {
+    return <div className="p-8 text-center">Loading...</div>;
   }
 
   return (
