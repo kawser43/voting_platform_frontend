@@ -12,11 +12,22 @@ import HeroSection from '@/components/Home/HeroSection';
 import JudgesSection from '@/components/Home/JudgesSection';
 import PartnersSection from '@/components/Home/PartnersSection';
 
-const SUBMISSION_DEADLINE = Date.UTC(2026, 1, 27, 15, 59, 59);
+import AlertModal from '@/components/AlertModal';
 
-const calculateTimeLeft = () => {
+const calculateTimeLeft = (deadline) => {
+    if (!deadline || Number.isNaN(deadline)) {
+        return {
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            isPast: false,
+            hasDeadline: false,
+        };
+    }
+
     const now = new Date().getTime();
-    const diff = SUBMISSION_DEADLINE - now;
+    const diff = deadline - now;
 
     if (diff <= 0) {
         return {
@@ -25,6 +36,7 @@ const calculateTimeLeft = () => {
             minutes: 0,
             seconds: 0,
             isPast: true,
+            hasDeadline: true,
         };
     }
 
@@ -34,11 +46,12 @@ const calculateTimeLeft = () => {
     const seconds = Math.floor((diff / 1000) % 60);
 
     return {
-        days,
-        hours,
-        minutes,
-        seconds,
-        isPast: false,
+        days: isNaN(days) || days < 0 ? 0 : days,
+        hours: isNaN(hours) || hours < 0 ? 0 : hours,
+        minutes: isNaN(minutes) || minutes < 0 ? 0 : minutes,
+        seconds: isNaN(seconds) || seconds < 0 ? 0 : seconds,
+        isPast: diff <= 0,
+        hasDeadline: true,
     };
 };
 
@@ -60,7 +73,62 @@ export default function Home() {
         hasVoted: false,
         canVote: true
     });
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
+    const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(null));
+    const [submissionSettings, setSubmissionSettings] = useState({
+        enabled: false,
+        deadline: null
+    });
+    const [alertState, setAlertState] = useState({ open: false, title: '', message: '', type: 'info' });
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const { data } = await Axios.get('/settings?group=submission_settings');
+                if (data.status && data.data) {
+                    const settings = data.data;
+                    const enabled = settings.submission_enabled !== undefined
+                        ? settings.submission_enabled == 1 || settings.submission_enabled === 'true'
+                        : false;
+                    let deadline = null;
+                    
+                    if (settings.submission_deadline) {
+                        const parsedDate = new Date(settings.submission_deadline);
+                        if (!isNaN(parsedDate.getTime())) {
+                            deadline = parsedDate.getTime();
+                        }
+                    }
+
+                    setSubmissionSettings({
+                        enabled,
+                        deadline
+                    });
+                    
+                    // Update time left immediately
+                    setTimeLeft(calculateTimeLeft(deadline));
+                }
+            } catch (err) {
+                console.error("Error fetching submission settings", err);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    useEffect(() => {
+        if (!submissionSettings.enabled || !submissionSettings.deadline) {
+            setTimeLeft(calculateTimeLeft(null));
+            return;
+        }
+
+        const timer = setInterval(() => {
+            const timeLeft = calculateTimeLeft(submissionSettings.deadline);
+            setTimeLeft(timeLeft);
+            if (timeLeft.isPast) {
+                clearInterval(timer);
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [submissionSettings.enabled, submissionSettings.deadline]);
 
     const fetchProfiles = async (pageNumber = 1, searchQuery = '') => {
         setLoading(true);
@@ -210,33 +278,50 @@ export default function Home() {
         checkVoteStatus();
     }, [isLoggedIn, user]);
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft(calculateTimeLeft());
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, []);
-
     const applyHref = isLoggedIn && user?.account_type === 'submitter'
         ? '/dashboard/submission'
         : '/auth/register';
 
+    const handleApplyClick = (e) => {
+        if (isLoggedIn && user?.account_type === 'voter') {
+            e.preventDefault();
+            setAlertState({
+                open: true,
+                title: 'Voter Account Restricted',
+                message: 'Voter accounts cannot submit profiles. Please create a submitter account to apply.',
+                type: 'info'
+            });
+        }
+    };
+
     return (
         <div className="bg-gray-50">
+            <AlertModal
+                isOpen={alertState.open}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+                onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+            />
             <main>
                 <div className="sticky top-0 z-30 bg-indigo-900 text-indigo-50 border-b border-indigo-700/60">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-col sm:flex-row items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                            <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                            {submissionSettings.enabled && (!timeLeft.hasDeadline || !timeLeft.isPast) && (
+                                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                            )}
                             <span>Submissions Close In:</span>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-3">
-                            {timeLeft.isPast ? (
+                            {!submissionSettings.enabled ? (
+                                <span className="text-xs sm:text-sm font-semibold text-amber-200">
+                                    Submissions are currently closed
+                                </span>
+                            ) : timeLeft.hasDeadline && timeLeft.isPast ? (
                                 <span className="text-xs sm:text-sm font-semibold text-amber-200">
                                     Submissions are now closed
                                 </span>
-                            ) : (
+                            ) : timeLeft.hasDeadline ? (
                                 <div className="flex items-center gap-2 text-[11px] sm:text-xs font-mono">
                                     <div className="flex flex-col items-center">
                                         <span className="px-2 py-1 rounded-md bg-indigo-800 text-indigo-50 min-w-[2.5rem] text-center">
@@ -263,13 +348,20 @@ export default function Home() {
                                         <span className="mt-0.5 text-[9px] uppercase tracking-wide text-indigo-200">Seconds</span>
                                     </div>
                                 </div>
+                            ) : (
+                                <span className="text-xs sm:text-sm font-semibold text-emerald-200">
+                                    Submissions are open
+                                </span>
                             )}
-                            <Link
-                                href={applyHref}
-                                className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-emerald-400 text-indigo-950 text-xs sm:text-sm font-semibold shadow-sm hover:bg-emerald-300 transition-colors"
-                            >
-                                Apply Now
-                            </Link>
+                            {submissionSettings.enabled && (!timeLeft.hasDeadline || !timeLeft.isPast) && (
+                                <Link
+                                    href={applyHref}
+                                    onClick={handleApplyClick}
+                                    className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-emerald-400 text-indigo-950 text-xs sm:text-sm font-semibold shadow-sm hover:bg-emerald-300 transition-colors"
+                                >
+                                    Apply Now
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -297,12 +389,15 @@ export default function Home() {
                                     Inspired by the classical meaning of Ma&apos;a, the inseparable bond between effort and support.
                                 </p>
                                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                                    <Link
-                                        href={applyHref}
-                                        className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
-                                    >
-                                        Apply Now
-                                    </Link>
+                                    {submissionSettings.enabled && (!timeLeft.hasDeadline || !timeLeft.isPast) && (
+                                        <Link
+                                            href={applyHref}
+                                            onClick={handleApplyClick}
+                                            className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
+                                        >
+                                            Apply Now
+                                        </Link>
+                                    )}
                                     <Link
                                         href="/faq"
                                         className="inline-flex items-center justify-center px-7 py-3 rounded-full border border-indigo-100 bg-white/70 text-xs md:text-sm text-indigo-800 font-semibold hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
@@ -577,12 +672,15 @@ export default function Home() {
                             Ready to take your organization to the next level?
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-                            <Link
-                                href={applyHref}
-                                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-indigo-900 text-sm font-semibold shadow-md hover:bg-indigo-50 transition-colors"
-                            >
-                                Start Your Impact Journey Today
-                            </Link>
+                            {submissionSettings.enabled && (!timeLeft.hasDeadline || !timeLeft.isPast) && (
+                                <Link
+                                    href={applyHref}
+                                    onClick={handleApplyClick}
+                                    className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-indigo-900 text-sm font-semibold shadow-md hover:bg-indigo-50 transition-colors"
+                                >
+                                    Start Your Impact Journey Today
+                                </Link>
+                            )}
                             <span className="hidden sm:inline-block text-indigo-100 text-sm">
                                 or
                             </span>
@@ -638,7 +736,7 @@ export default function Home() {
                                         </span>
                                     </div>
                                     <p className="font-semibold text-indigo-900 text-sm">
-                                        20 – 27 February 2026
+                                        20 – 28 February 2026
                                     </p>
                                     <p className="text-xs text-slate-600 mt-1.5">
                                         Submit your project profile and a 2-minute pitch video.
@@ -710,12 +808,15 @@ export default function Home() {
                             Submit your application before the deadline.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <Link
-                                href={applyHref}
-                                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-indigo-900 text-sm font-semibold shadow-md hover:bg-indigo-50 transition-colors"
-                            >
-                                Apply Now
-                            </Link>
+                            {submissionSettings.enabled && (!timeLeft.hasDeadline || !timeLeft.isPast) && (
+                                <Link
+                                    href={applyHref}
+                                    onClick={handleApplyClick}
+                                    className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-indigo-900 text-sm font-semibold shadow-md hover:bg-indigo-50 transition-colors"
+                                >
+                                    Apply Now
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </section>

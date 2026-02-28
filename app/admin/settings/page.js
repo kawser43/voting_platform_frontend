@@ -31,6 +31,11 @@ export default function AdminSettings() {
     const [passwordError, setPasswordError] = useState(null);
     const [syncingSendGrid, setSyncingSendGrid] = useState(false);
 
+    const [submissionSettings, setSubmissionSettings] = useState({
+        submission_enabled: false,
+        submission_deadline: ''
+    });
+
     useEffect(() => {
         if (!isLoggedIn) {
             // router.push('/auth/login');
@@ -42,10 +47,20 @@ export default function AdminSettings() {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const { data } = await Axios.get('/settings?group=hero_section');
-                if (data.status) {
-                    // Merge defaults with fetched data
-                    setSettings(prev => ({ ...prev, ...data.data }));
+                const [heroRes, subRes] = await Promise.all([
+                    Axios.get('/settings?group=hero_section'),
+                    Axios.get('/settings?group=submission_settings')
+                ]);
+
+                if (heroRes.data.status) {
+                    setSettings(prev => ({ ...prev, ...heroRes.data.data }));
+                }
+                if (subRes.data.status) {
+                    setSubmissionSettings({
+                        submission_enabled: false,
+                        submission_deadline: '',
+                        ...(subRes.data.data || {})
+                    });
                 }
             } catch (err) {
                 console.error("Error fetching settings", err);
@@ -62,6 +77,14 @@ export default function AdminSettings() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setSettings(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmissionChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setSubmissionSettings(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -87,6 +110,39 @@ export default function AdminSettings() {
                 open: true,
                 title: 'Error',
                 message: 'Failed to update settings',
+                type: 'error'
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSubmissionSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const { data } = await Axios.post('/admin/settings', {
+                settings: {
+                    ...submissionSettings,
+                    submission_enabled: submissionSettings.submission_enabled ? '1' : '0'
+                },
+                group: 'submission_settings'
+            });
+
+            if (data.status) {
+                setAlertState({
+                    open: true,
+                    title: 'Success',
+                    message: 'Submission settings updated successfully',
+                    type: 'success'
+                });
+            }
+        } catch (err) {
+            console.error("Error updating submission settings", err);
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: 'Failed to update submission settings',
                 type: 'error'
             });
         } finally {
@@ -170,38 +226,55 @@ export default function AdminSettings() {
             />
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Site Settings</h1>
             
-            {/* Integrations */}
+            {/* Submission Settings */}
             <div className="bg-white shadow rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Integrations</h2>
-                <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Submission Settings</h2>
+                <form onSubmit={handleSubmissionSubmit} className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            id="submission_enabled"
+                            name="submission_enabled"
+                            checked={submissionSettings.submission_enabled == 1 || submissionSettings.submission_enabled === true}
+                            onChange={handleSubmissionChange}
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="submission_enabled" className="text-sm font-medium text-gray-700">
+                            Enable Profile Submissions
+                        </label>
+                    </div>
+
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900">SendGrid Contacts Sync</h3>
-                        <p className="text-sm text-gray-500">
-                            Sync verified users to your SendGrid marketing contacts list.
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Submission Deadline (MYT)
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="submission_deadline"
+                            value={submissionSettings.submission_deadline || ''}
+                            onChange={handleSubmissionChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                            Set the deadline for profile submissions. Leave empty for no automatic deadline.
                         </p>
                     </div>
-                    <button
-                        onClick={handleSyncSendGrid}
-                        disabled={syncingSendGrid}
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center"
-                    >
-                        {syncingSendGrid ? (
-                            <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Syncing...
-                            </>
-                        ) : (
-                            'Sync Contacts'
-                        )}
-                    </button>
-                </div>
+
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                            {saving ? 'Saving...' : 'Save Submission Settings'}
+                        </button>
+                    </div>
+                </form>
             </div>
 
+            {/* Hero Section Settings */}
             <div className="bg-white shadow rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-2">Hero Section Content</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Hero Section Content</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Hero Title (HTML allowed)</label>
@@ -260,6 +333,36 @@ export default function AdminSettings() {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            {/* Integrations */}
+            <div className="bg-white shadow rounded-lg p-6 mb-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Integrations</h2>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-medium text-gray-900">SendGrid Contacts Sync</h3>
+                        <p className="text-sm text-gray-500">
+                            Sync verified users to your SendGrid marketing contacts list.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleSyncSendGrid}
+                        disabled={syncingSendGrid}
+                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center"
+                    >
+                        {syncingSendGrid ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Syncing...
+                            </>
+                        ) : (
+                            'Sync Contacts'
+                        )}
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white shadow rounded-lg p-6">
