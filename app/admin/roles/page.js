@@ -13,7 +13,7 @@ export default function AdminRoles() {
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState(null);
-    const [formData, setFormData] = useState({ name: '', description: '', permissions: [] });
+    const [formData, setFormData] = useState({ role: '', permissions: [] });
     const [saving, setSaving] = useState(false);
     const [alertState, setAlertState] = useState({ open: false, title: '', message: '', type: 'success' });
     const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
@@ -46,8 +46,7 @@ export default function AdminRoles() {
     const handleEdit = (role) => {
         setEditingRole(role);
         setFormData({
-            name: role.name,
-            description: role.description || '',
+            role: role.role,
             permissions: role.permissions.map(p => p.id)
         });
         setModalOpen(true);
@@ -55,7 +54,7 @@ export default function AdminRoles() {
 
     const handleCreate = () => {
         setEditingRole(null);
-        setFormData({ name: '', description: '', permissions: [] });
+        setFormData({ role: '', permissions: [] });
         setModalOpen(true);
     };
 
@@ -158,7 +157,6 @@ export default function AdminRoles() {
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -166,8 +164,7 @@ export default function AdminRoles() {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {roles.map(role => (
                             <tr key={role.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{role.name}</td>
-                                <td className="px-6 py-4 text-sm text-gray-500">{role.description}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{role.role}</td>
                                 <td className="px-6 py-4 text-sm text-gray-500">
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                         {role.permissions.length} permissions
@@ -217,17 +214,8 @@ export default function AdminRoles() {
                                             <input
                                                 type="text"
                                                 required
-                                                value={formData.name}
-                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Description</label>
-                                            <textarea
-                                                value={formData.description}
-                                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                                rows={2}
+                                                value={formData.role}
+                                                onChange={e => setFormData({ ...formData, role: e.target.value })}
                                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                             />
                                         </div>
@@ -242,7 +230,7 @@ export default function AdminRoles() {
                                                             onChange={() => togglePermission(perm.id)}
                                                             className="rounded text-indigo-600 focus:ring-indigo-500"
                                                         />
-                                                        <span title={perm.description}>{perm.name}</span>
+                                                        <span>{perm.permission}</span>
                                                     </label>
                                                 ))}
                                             </div>
