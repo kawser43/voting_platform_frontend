@@ -1,13 +1,14 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@/context/UserContext';
+import Axios from '@/Helper/Axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function RegisterPage() {
     const router = useRouter();
-    const { user, isLoggedIn, register } = useUser();
+    const { user, isLoggedIn, loginUser } = useUser();
     const turnstileEnabled = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== '0';
     
     const [turnstileToken, setTurnstileToken] = useState('');
@@ -82,23 +83,27 @@ export default function RegisterPage() {
             // Collect browser signals (simple bot check)
             const isWebDriver = navigator.webdriver || false;
 
-            const res = await register({
+            const payload = {
                 ...formData,
                 captcha_token: turnstileEnabled ? turnstileToken : null,
                 form_started_at: formStartedAt,
                 website: '', // Honeypot field should be empty
                 is_webdriver: isWebDriver
-            });
-
-            if (res.status) {
-                // Registration successful and auto-verified
-                // Redirect to dashboard immediately
-                window.location.href = '/dashboard';
-            } else {
-                setError(res.message || 'Registration failed');
-                // Reset captcha
-                setTurnstileToken('');
             }
+            const { data } = await Axios.post('/register', payload);
+
+            if (data.status) {
+                const token = data.data?.access_token;
+                const u = data.data?.user;
+                if (token && u) {
+                    loginUser(u, token);
+                }
+                window.location.href = '/dashboard';
+                return;
+            }
+
+            setError(data.message || 'Registration failed');
+            setTurnstileToken('');
         } catch (err) {
             setError(err.response?.data?.message || 'Something went wrong');
             setShowToast(true);
