@@ -1,26 +1,46 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Axios from '@/Helper/Axios';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function RegisterPage() {
-    const { loginUser } = useUser();
     const router = useRouter();
-    const [formData, setFormData] = useState({ 
-        name: '',
-        account_type: '',
-        designation: '',
-        whatsapp: '',
-        email: '', 
-        password: '',
-        password_confirmation: ''
-    });
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [showToast, setShowToast] = useState(false);
+    const { user, isLoggedIn, register } = useUser();
+    
+    const [turnstileToken, setTurnstileToken] = useState('');
+    const [formStartedAt] = useState(Date.now());
+    
+    // Honeypot field ref
+    const websiteRef = useRef(null);
     const errorRef = useRef(null);
+    const [showToast, setShowToast] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+        account_type: 'voter', // Default to voter
+        designation: '',
+        whatsapp: ''
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const passwordsMatch = Boolean(
+        formData.password &&
+        formData.password_confirmation &&
+        formData.password === formData.password_confirmation
+    );
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            router.push('/dashboard');
+        }
+    }, [isLoggedIn, user, router]);
 
     useEffect(() => {
         if (error && errorRef.current) {
@@ -28,28 +48,61 @@ export default function RegisterPage() {
         }
     }, [error]);
 
-    const passwordsMatch = Boolean(
-        formData.password &&
-        formData.password_confirmation &&
-        formData.password === formData.password_confirmation
-    );
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleTurnstileVerify = (token) => {
+        setTurnstileToken(token);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
+
+        // Check honeypot
+        if (websiteRef.current && websiteRef.current.value) {
+            // Bot detected, silently fail
+            return;
+        }
+
+        if (!turnstileToken) {
+            setError('Please complete the captcha verification.');
+            return;
+        }
+
+        if (formData.password !== formData.password_confirmation) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        setLoading(true);
         try {
-            const { data } = await Axios.post('/register', formData);
-            if (data.status) {
-                const email = formData.email;
-                router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+            // Collect browser signals (simple bot check)
+            const isWebDriver = navigator.webdriver || false;
+
+            const res = await register({
+                ...formData,
+                captcha_token: turnstileToken,
+                form_started_at: formStartedAt,
+                website: '', // Honeypot field should be empty
+                is_webdriver: isWebDriver
+            });
+
+            if (res.status) {
+                // Registration successful and auto-verified
+                // Redirect to dashboard immediately
+                window.location.href = '/dashboard';
             } else {
-                setError(data.message || 'Registration failed');
+                setError(res.message || 'Registration failed');
+                // Reset captcha
+                setTurnstileToken('');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please check your inputs.');
+            setError(err.response?.data?.message || 'Something went wrong');
             setShowToast(true);
             setTimeout(() => setShowToast(false), 5000);
+            setTurnstileToken('');
         } finally {
             setLoading(false);
         }
@@ -57,6 +110,7 @@ export default function RegisterPage() {
 
     return (
         <div className="auth-page min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+
              {/* Background decoration */}
              <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                 <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -100,6 +154,13 @@ export default function RegisterPage() {
                     )}
 
                     <div className="space-y-4">
+                        <input 
+                            type="text" 
+                            ref={websiteRef}
+                            autoComplete="off"
+                            tabIndex={-1}
+                            className="absolute opacity-0 -z-10 w-0 h-0 overflow-hidden"
+                        />
                         <div>
                             <label htmlFor="full-name" className="block text-sm font-medium mb-1">Full Name</label>
                             <div className="relative rounded-md shadow-sm">
@@ -275,6 +336,14 @@ export default function RegisterPage() {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <div className="flex justify-center mb-6">
+                        <Turnstile 
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY} 
+                            onSuccess={handleTurnstileVerify}
+                            options={{ theme: 'light' }}
+                        />
                     </div>
 
                     <div>

@@ -323,7 +323,7 @@ export default function AdminSettings() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Hero Title (HTML allowed)</label>
-                        <p className="text-xs text-gray-500 mb-2">Use &lt;br&gt; for line breaks and &lt;span class="text-indigo-600"&gt; for colored text.</p>
+                        <p className="text-xs text-gray-500 mb-2">Use &lt;br&gt; for line breaks and &lt;span class=&quot;text-indigo-600&quot;&gt; for colored text.</p>
                         <input
                             type="text"
                             name="hero_title"

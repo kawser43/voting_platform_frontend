@@ -195,7 +195,7 @@ export default function AdminFaqPage() {
                 <div className="text-center py-12 text-gray-500">Loading FAQs...</div>
             ) : faqs.length === 0 ? (
                 <div className="text-center py-12 text-gray-500 border border-dashed border-gray-200 rounded-lg">
-                    No FAQs yet. Click "Add FAQ" to create the first one.
+                    No FAQs yet. Click &quot;Add FAQ&quot; to create the first one.
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -326,4 +326,3 @@ export default function AdminFaqPage() {
         </div>
     );
 }
-
