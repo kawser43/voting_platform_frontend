@@ -8,6 +8,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 export default function RegisterPage() {
     const router = useRouter();
     const { user, isLoggedIn, register } = useUser();
+    const turnstileEnabled = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== '0';
     
     const [turnstileToken, setTurnstileToken] = useState('');
     const [formStartedAt] = useState(Date.now());
@@ -66,7 +67,7 @@ export default function RegisterPage() {
             return;
         }
 
-        if (!turnstileToken) {
+        if (turnstileEnabled && !turnstileToken) {
             setError('Please complete the captcha verification.');
             return;
         }
@@ -83,7 +84,7 @@ export default function RegisterPage() {
 
             const res = await register({
                 ...formData,
-                captcha_token: turnstileToken,
+                captcha_token: turnstileEnabled ? turnstileToken : null,
                 form_started_at: formStartedAt,
                 website: '', // Honeypot field should be empty
                 is_webdriver: isWebDriver
@@ -338,13 +339,15 @@ export default function RegisterPage() {
                         </div>
                     </div>
 
-                    <div className="flex justify-center mb-6">
-                        <Turnstile 
-                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY} 
-                            onSuccess={handleTurnstileVerify}
-                            options={{ theme: 'light' }}
-                        />
-                    </div>
+                    {turnstileEnabled && (
+                        <div className="flex justify-center mb-6">
+                            <Turnstile 
+                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY} 
+                                onSuccess={handleTurnstileVerify}
+                                options={{ theme: 'light' }}
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <button
