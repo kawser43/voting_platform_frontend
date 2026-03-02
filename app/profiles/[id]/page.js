@@ -102,6 +102,11 @@ export default function PublicProfilePage() {
         }
 
         if (!isLoggedIn) {
+            // Save redirect URL for after login/register
+            if (typeof window !== 'undefined') {
+                sessionStorage.setItem('redirect_after_auth', window.location.pathname);
+            }
+            
             setAlertState({
                 open: true,
                 title: 'Register or Login to Vote',

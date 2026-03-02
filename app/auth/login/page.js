@@ -22,6 +22,14 @@ export default function LoginPage() {
                 const loggedInUser = data.data.user;
                 loginUser(loggedInUser, data.data.access_token);
 
+                // Check for redirect after auth
+                const redirectPath = typeof window !== 'undefined' ? sessionStorage.getItem('redirect_after_auth') : null;
+                if (redirectPath) {
+                    sessionStorage.removeItem('redirect_after_auth');
+                    router.push(redirectPath);
+                    return;
+                }
+
                 if (loggedInUser?.account_type === 'voter') {
                     router.push('/explore');
                     return;

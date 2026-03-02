@@ -15,6 +15,7 @@ export default function RegisterPage() {
     const [turnstileToken, setTurnstileToken] = useState('');
     const [turnstileError, setTurnstileError] = useState(null);
     const [formStartedAt] = useState(Date.now());
+    const [submissionsOpen, setSubmissionsOpen] = useState(false);
     
     // Honeypot field ref
     const websiteRef = useRef(null);
@@ -51,6 +52,29 @@ export default function RegisterPage() {
             errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }, [error]);
+    
+    useEffect(() => {
+        const fetchSubmissionSettings = async () => {
+            try {
+                const { data } = await Axios.get('/settings?group=submission_settings');
+                if (data?.status) {
+                    const enabled = !!data.data?.submission_enabled;
+                    const deadline = data.data?.submission_deadline ? new Date(data.data.submission_deadline) : null;
+                    const now = new Date();
+                    const open = enabled && (!deadline || now <= deadline);
+                    setSubmissionsOpen(open);
+                    if (!open && formData.account_type === 'submitter') {
+                        setFormData(prev => ({ ...prev, account_type: 'voter', designation: '', whatsapp: '' }));
+                    }
+                } else {
+                    setSubmissionsOpen(false);
+                }
+            } catch {
+                setSubmissionsOpen(false);
+            }
+        };
+        fetchSubmissionSettings();
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -106,6 +130,14 @@ export default function RegisterPage() {
                 if (token && u) {
                     loginUser(u, token);
                 }
+
+                const redirectPath = typeof window !== 'undefined' ? sessionStorage.getItem('redirect_after_auth') : null;
+                if (redirectPath) {
+                    sessionStorage.removeItem('redirect_after_auth');
+                    window.location.href = redirectPath;
+                    return;
+                }
+
                 window.location.href = '/dashboard';
                 return;
             }
@@ -196,52 +228,50 @@ export default function RegisterPage() {
                                 />
                             </div>
                         </div>
-                        {/* Account Type */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Choose Account Type</label>
-                            <div className="grid grid-cols-1 gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData({ ...formData, account_type: 'submitter' })}
-                                    className={`flex items-start p-4 rounded-lg border transition-all w-full ${
-                                        formData.account_type === 'submitter'
-                                            ? 'border-indigo-500 bg-indigo-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <div className={`mt-1 w-5 h-5 rounded-full mr-3 flex items-center justify-center ${formData.account_type === 'submitter' ? 'bg-indigo-600' : 'bg-gray-200'}`}>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="font-medium">I want to submit my organization profile</p>
-                                        <p className="auth-helper-text text-xs mt-1">Create and manage a submission.</p>
-                                    </div>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData({ ...formData, account_type: 'voter', designation: '', whatsapp: '' })}
-                                    className={`flex items-start p-4 rounded-lg border transition-all w-full ${
-                                        formData.account_type === 'voter'
-                                            ? 'border-indigo-500 bg-indigo-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <div className={`mt-1 w-5 h-5 rounded-full mr-3 flex items-center justify-center ${formData.account_type === 'voter' ? 'bg-indigo-600' : 'bg-gray-200'}`}>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="font-medium">I want to vote</p>
-                                        <p className="auth-helper-text text-xs mt-1">Help your favourite organisations win the Ma&apos;a Prize</p>
-                                    </div>
-                                </button>
+                        {submissionsOpen && (
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Choose Account Type</label>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, account_type: 'submitter' })}
+                                        className={`flex items-start p-4 rounded-lg border transition-all w-full ${
+                                            formData.account_type === 'submitter'
+                                                ? 'border-indigo-500 bg-indigo-50'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`mt-1 w-5 h-5 rounded-full mr-3 flex items-center justify-center ${formData.account_type === 'submitter' ? 'bg-indigo-600' : 'bg-gray-200'}`}>
+                                            <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-medium">I want to submit my organization profile</p>
+                                            <p className="auth-helper-text text-xs mt-1">Create and manage a submission.</p>
+                                        </div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, account_type: 'voter', designation: '', whatsapp: '' })}
+                                        className={`flex items-start p-4 rounded-lg border transition-all w-full ${
+                                            formData.account_type === 'voter'
+                                                ? 'border-indigo-500 bg-indigo-50'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`mt-1 w-5 h-5 rounded-full mr-3 flex items-center justify-center ${formData.account_type === 'voter' ? 'bg-indigo-600' : 'bg-gray-200'}`}>
+                                            <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-medium">I want to vote</p>
+                                            <p className="auth-helper-text text-xs mt-1">Help your favourite organisations win the Ma&apos;a Prize</p>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
-                            {!formData.account_type && (
-                                <p className="auth-error-text text-xs mt-1">Please choose an account type.</p>
-                            )}
-                        </div>
+                        )}
 
                         {/* Conditional fields for Submitter */}
-                        {formData.account_type === 'submitter' && (
+                        {submissionsOpen && formData.account_type === 'submitter' && (
                             <>
                                 <div>
                                     <label htmlFor="designation" className="block text-sm font-medium mb-1">Designation</label>
