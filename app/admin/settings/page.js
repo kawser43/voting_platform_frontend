@@ -30,6 +30,9 @@ export default function AdminSettings() {
     });
     const [passwordError, setPasswordError] = useState(null);
     const [syncingSendGrid, setSyncingSendGrid] = useState(false);
+    const [retryingJobs, setRetryingJobs] = useState(false);
+    const [retryLimit, setRetryLimit] = useState(100);
+    const [failedJobCount, setFailedJobCount] = useState(0);
 
     const [submissionSettings, setSubmissionSettings] = useState({
         submission_enabled: false,
@@ -47,9 +50,10 @@ export default function AdminSettings() {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const [heroRes, subRes] = await Promise.all([
+                const [heroRes, subRes, jobRes] = await Promise.all([
                     Axios.get('/settings?group=hero_section'),
-                    Axios.get('/settings?group=submission_settings')
+                    Axios.get('/settings?group=submission_settings'),
+                    Axios.get('/admin/failed-jobs-count')
                 ]);
 
                 if (heroRes.data.status) {
@@ -61,6 +65,9 @@ export default function AdminSettings() {
                         submission_deadline: '',
                         ...(subRes.data.data || {})
                     });
+                }
+                if (jobRes.data.status) {
+                    setFailedJobCount(jobRes.data.count);
                 }
             } catch (err) {
                 console.error("Error fetching settings", err);
@@ -213,6 +220,44 @@ export default function AdminSettings() {
         }
     };
 
+    const handleRetryJobs = async () => {
+        if (retryingJobs) return;
+        setRetryingJobs(true);
+        try {
+            const { data } = await Axios.post('/admin/retry-failed-jobs', { limit: retryLimit });
+            if (data.status) {
+                setAlertState({
+                    open: true,
+                    title: 'Jobs Queued',
+                    message: data.message,
+                    type: 'success'
+                });
+                // Refresh count
+                const countRes = await Axios.get('/admin/failed-jobs-count');
+                if (countRes.data.status) {
+                    setFailedJobCount(countRes.data.count);
+                }
+            } else {
+                setAlertState({
+                    open: true,
+                    title: 'Error',
+                    message: data.message || 'Failed to retry jobs',
+                    type: 'error'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            setAlertState({
+                open: true,
+                title: 'Error',
+                message: err.response?.data?.message || 'Failed to retry jobs',
+                type: 'error'
+            });
+        } finally {
+            setRetryingJobs(false);
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Loading Settings...</div>;
 
     return (
@@ -337,8 +382,10 @@ export default function AdminSettings() {
 
             {/* Integrations */}
             <div className="bg-white shadow rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Integrations</h2>
-                <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">System Operations</h2>
+                
+                {/* SendGrid Sync */}
+                <div className="flex items-center justify-between mb-6 border-b pb-6">
                     <div>
                         <h3 className="text-lg font-medium text-gray-900">SendGrid Contacts Sync</h3>
                         <p className="text-sm text-gray-500">
@@ -360,6 +407,50 @@ export default function AdminSettings() {
                             </>
                         ) : (
                             'Sync Contacts'
+                        )}
+                    </button>
+                </div>
+
+                {/* Failed Jobs Retry */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-medium text-gray-900">
+                            Retry Failed Jobs
+                            {failedJobCount > 0 && (
+                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    {failedJobCount} failed
+                                </span>
+                            )}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-2">
+                            Process failed background jobs.
+                        </p>
+                        <div className="flex items-center space-x-2">
+                            <label className="text-sm text-gray-600">Limit:</label>
+                            <input 
+                                type="number" 
+                                min="1"
+                                value={retryLimit}
+                                onChange={(e) => setRetryLimit(parseInt(e.target.value) || 100)}
+                                className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleRetryJobs}
+                        disabled={retryingJobs}
+                        className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 disabled:opacity-50 flex items-center"
+                    >
+                        {retryingJobs ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Retrying...
+                            </>
+                        ) : (
+                            'Retry Jobs'
                         )}
                     </button>
                 </div>
