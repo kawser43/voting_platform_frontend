@@ -3,6 +3,7 @@ import Axios from '@/Helper/Axios';
 import { useEffect, useState, useRef } from 'react';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
+import Pagination from '@/components/Pagination';
 
 export default function AdminUsersPage() {
     const { user, isLoggedIn } = useUser();
@@ -337,35 +338,11 @@ export default function AdminUsersPage() {
                     </div>
 
                     {lastPage > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-100">
-                            <button
-                                onClick={() => {
-                                    if (page > 1) {
-                                        const newPage = page - 1;
-                                        fetchUsers(newPage, search);
-                                    }
-                                }}
-                                disabled={page === 1 || loading}
-                                className="px-3 py-1.5 text-xs rounded-md border bg-white text-gray-700 disabled:opacity-50"
-                            >
-                                Previous
-                            </button>
-                            <span className="text-xs text-gray-500">
-                                Page {page} of {lastPage}
-                            </span>
-                            <button
-                                onClick={() => {
-                                    if (page < lastPage) {
-                                        const newPage = page + 1;
-                                        fetchUsers(newPage, search);
-                                    }
-                                }}
-                                disabled={page === lastPage || loading}
-                                className="px-3 py-1.5 text-xs rounded-md border bg-white text-gray-700 disabled:opacity-50"
-                            >
-                                Next
-                            </button>
-                        </div>
+                        <Pagination
+                            currentPage={page}
+                            lastPage={lastPage}
+                            onPageChange={(newPage) => fetchUsers(newPage)}
+                        />
                     )}
                 </div>
 

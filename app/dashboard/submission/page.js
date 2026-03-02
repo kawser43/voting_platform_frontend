@@ -278,7 +278,7 @@ export default function SubmissionPage() {
                 {status === 'approved' && (
                     <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
                         <p className="font-bold">Approved</p>
-                        <p>Your profile has been approved and is live on the leaderboard. You cannot edit it anymore.</p>
+                        <p>Your profile has been approved and is live on the leaderboard. You can only update your video link.</p>
                     </div>
                 )}
 
@@ -323,29 +323,32 @@ export default function SubmissionPage() {
                 )}
 
                 <form onSubmit={(e) => handleSubmit(e, false)}>
-                    <fieldset disabled={status === 'approved'} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Organization Name (required)</label>
-                        <input 
-                            type="text" 
-                            name="organization_name" 
-                            value={formData.organization_name} 
-                            onChange={handleChange}
-                            required 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Country (required)</label>
-                        <SearchableSelect
-                            items={countries}
-                            getLabel={(c) => `${c.name}${c.iso2 ? ` (${c.iso2})` : ''}`}
-                            getValue={(c) => c.name}
-                            value={formData.country}
-                            onChange={(val) => setFormData(prev => ({ ...prev, country: val }))}
-                            placeholder="Select a country"
-                            disabled={status === 'approved'}
-                        />
+                    <fieldset className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Organization Name (required)</label>
+                            <input 
+                                type="text" 
+                                name="organization_name" 
+                                value={formData.organization_name} 
+                                onChange={handleChange}
+                                required
+                                disabled={status === 'approved'}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 disabled:bg-gray-100 disabled:text-gray-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Country (required)</label>
+                            <SearchableSelect
+                                items={countries}
+                                getLabel={(c) => `${c.name}${c.iso2 ? ` (${c.iso2})` : ''}`}
+                                getValue={(c) => c.name}
+                                value={formData.country}
+                                onChange={(val) => setFormData(prev => ({ ...prev, country: val }))}
+                                placeholder="Select a country"
+                                disabled={status === 'approved'}
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -362,50 +365,53 @@ export default function SubmissionPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Logo (required)</label>
-                        <input 
-                            type="file" 
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        <label className="block text-sm font-medium text-gray-700">Organization Logo (required, max 5MB)</label>
+                        <div className="mt-1 flex items-center">
+                            {preview && (
+                                <img src={preview} alt="Current Logo" className="h-12 w-12 rounded-full object-cover mr-4" />
+                            )}
+                            <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                disabled={status === 'approved'}
+                                className="block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50"
+                            />
+                        </div>
+                        {logo && <p className="text-xs text-gray-500 mt-1">Selected: {logo.name}</p>}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Short Summary (max 300 chars, required)</label>
+                        <RichTextLimited
+                            value={formData.summary}
+                            onChange={(val) => setFormData(prev => ({ ...prev, summary: val }))}
+                            maxLength={300}
+                            placeholder="Describe your organization..."
+                            disabled={status === 'approved'}
                         />
-                        {preview && <img src={preview} alt="Logo Preview" className="mt-2 h-20 w-auto object-contain rounded border" />}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Short Organization Summary (max 300, required)</label>
-                        <div className="mt-1">
-                            <RichTextLimited 
-                                value={formData.summary}
-                                onChange={(html) => setFormData(prev => ({ ...prev, summary: html }))}
-                                maxLength={300}
-                                placeholder="Tell us briefly about your organization..."
-                            />
-                        </div>
+                        <label className="block text-sm font-medium text-gray-700">Why you deserve to win (max 300 chars, required)</label>
+                        <RichTextLimited
+                            value={formData.why_win}
+                            onChange={(val) => setFormData(prev => ({ ...prev, why_win: val }))}
+                            maxLength={300}
+                            placeholder="Tell us why..."
+                            disabled={status === 'approved'}
+                        />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Why do you deserve to win? (max 300, required)</label>
-                        <div className="mt-1">
-                            <RichTextLimited 
-                                value={formData.why_win}
-                                onChange={(html) => setFormData(prev => ({ ...prev, why_win: html }))}
-                                maxLength={300}
-                                placeholder="Explain your achievements, impact, and uniqueness..."
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">How will this money help you? (max 300, required)</label>
-                        <div className="mt-1">
-                            <RichTextLimited 
-                                value={formData.how_help}
-                                onChange={(html) => setFormData(prev => ({ ...prev, how_help: html }))}
-                                maxLength={300}
-                                placeholder="Describe how the funds will advance your mission..."
-                            />
-                        </div>
+                        <label className="block text-sm font-medium text-gray-700">How funds will help (max 300 chars, required)</label>
+                        <RichTextLimited
+                            value={formData.how_help}
+                            onChange={(val) => setFormData(prev => ({ ...prev, how_help: val }))}
+                            maxLength={300}
+                            placeholder="Explain the impact..."
+                            disabled={status === 'approved'}
+                        />
                     </div>
 
                     <div>
@@ -429,7 +435,8 @@ export default function SubmissionPage() {
                             type="file" 
                             accept="application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,image/jpeg"
                             onChange={handlePitchDeckChange}
-                            className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                            disabled={status === 'approved'}
+                            className="mt-1 block w-full text-sm text-gray-500 cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-50"
                         />
                         {pitchDeck && <p className="text-xs text-gray-500 mt-1">Selected: {pitchDeck.name}</p>}
                     </div>
@@ -442,7 +449,8 @@ export default function SubmissionPage() {
                             name="website_url" 
                             value={formData.website_url} 
                             onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            disabled={status === 'approved'}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 disabled:bg-gray-100 disabled:text-gray-500"
                         />
                     </div>
 
@@ -455,7 +463,8 @@ export default function SubmissionPage() {
                                 name="facebook" 
                                 value={formData.facebook} 
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                disabled={status === 'approved'}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 disabled:bg-gray-100 disabled:text-gray-500"
                             />
                         </div>
                         <div>
@@ -465,7 +474,8 @@ export default function SubmissionPage() {
                                 name="twitter" 
                                 value={formData.twitter} 
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                disabled={status === 'approved'}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 disabled:bg-gray-100 disabled:text-gray-500"
                             />
                         </div>
                         <div>
@@ -475,7 +485,8 @@ export default function SubmissionPage() {
                                 name="linkedin" 
                                 value={formData.linkedin} 
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                disabled={status === 'approved'}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 disabled:bg-gray-100 disabled:text-gray-500"
                             />
                         </div>
                         <div>
@@ -485,7 +496,8 @@ export default function SubmissionPage() {
                                 name="instagram" 
                                 value={formData.instagram} 
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                disabled={status === 'approved'}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 disabled:bg-gray-100 disabled:text-gray-500"
                             />
                         </div>
                     </div>
@@ -495,16 +507,16 @@ export default function SubmissionPage() {
                             type="button"
                             disabled={loading}
                             onClick={(e) => handleSubmit(e, true)}
-                            className="w-full bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200 disabled:opacity-50 border"
+                            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 ${status === 'approved' ? 'hidden' : ''}`}
                         >
-                            {loading ? 'Saving...' : 'Save as Draft'}
+                            Save as Draft
                         </button>
                         <button 
                             type="submit" 
                             disabled={loading}
-                            className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+                            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 ${status === 'approved' ? 'md:col-span-2' : ''}`}
                         >
-                            {loading ? 'Submitting...' : 'Save & Submit'}
+                            {loading ? 'Processing...' : (status === 'approved' ? 'Update Video' : 'Save & Submit')}
                         </button>
                     </div>
                     </fieldset>

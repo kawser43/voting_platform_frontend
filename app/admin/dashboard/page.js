@@ -7,6 +7,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import SearchableSelect from '@/components/inputs/SearchableSelect';
 import RichTextLimited from '@/components/inputs/RichTextLimited';
 import AlertModal from '@/components/AlertModal';
+import Pagination from '@/components/Pagination';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
@@ -622,6 +623,13 @@ export default function AdminDashboard() {
                             </li>
                         ))}
                     </ul>
+                    {!loading && lastPage > 1 && (
+                        <Pagination
+                            currentPage={page}
+                            lastPage={lastPage}
+                            onPageChange={handlePageChange}
+                        />
+                    )}
                 </div>
             ) : (
                 <div className="text-center py-12 text-gray-500">
@@ -629,27 +637,7 @@ export default function AdminDashboard() {
                 </div>
             )}
 
-            {!loading && lastPage > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                    <button
-                        onClick={() => handlePageChange(page - 1)}
-                        disabled={page === 1}
-                        className="px-3 py-1.5 text-xs rounded-md border bg-white text-gray-700 disabled:opacity-50"
-                    >
-                        Previous
-                    </button>
-                    <span className="text-xs text-gray-500">
-                        Page {page} of {lastPage}
-                    </span>
-                    <button
-                        onClick={() => handlePageChange(page + 1)}
-                        disabled={page === lastPage}
-                        className="px-3 py-1.5 text-xs rounded-md border bg-white text-gray-700 disabled:opacity-50"
-                    >
-                        Next
-                    </button>
-                </div>
-            )}
+
 
             {/* Reject Modal */}
             {rejectModal.open && (
