@@ -10,8 +10,10 @@ export default function RegisterPage() {
     const router = useRouter();
     const { user, isLoggedIn, loginUser } = useUser();
     const turnstileEnabled = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== '0';
+    const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
     
     const [turnstileToken, setTurnstileToken] = useState('');
+    const [turnstileError, setTurnstileError] = useState(null);
     const [formStartedAt] = useState(Date.now());
     
     // Honeypot field ref
@@ -56,6 +58,7 @@ export default function RegisterPage() {
 
     const handleTurnstileVerify = (token) => {
         setTurnstileToken(token);
+        setTurnstileError(null);
     };
 
     const handleSubmit = async (e) => {
@@ -65,6 +68,11 @@ export default function RegisterPage() {
         // Check honeypot
         if (websiteRef.current && websiteRef.current.value) {
             // Bot detected, silently fail
+            return;
+        }
+
+        if (turnstileEnabled && !turnstileSiteKey) {
+            setError('Captcha is not configured.');
             return;
         }
 
@@ -347,10 +355,23 @@ export default function RegisterPage() {
                     {turnstileEnabled && (
                         <div className="flex justify-center mb-6">
                             <Turnstile 
-                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY} 
+                                siteKey={turnstileSiteKey} 
                                 onSuccess={handleTurnstileVerify}
+                                onError={() => {
+                                    setTurnstileToken('');
+                                    setTurnstileError('Captcha failed to load or is not allowed for this domain.');
+                                }}
+                                onExpire={() => {
+                                    setTurnstileToken('');
+                                }}
                                 options={{ theme: 'light' }}
                             />
+                        </div>
+                    )}
+
+                    {turnstileEnabled && turnstileError && (
+                        <div className="auth-error-text text-xs -mt-4 text-center">
+                            {turnstileError}
                         </div>
                     )}
 
