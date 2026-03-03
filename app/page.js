@@ -175,9 +175,9 @@ export default function Home() {
 
     const fetchCategoryLeaderboards = async () => {
         try {
-            const { data } = await Axios.get('/categories');
+            const { data } = await Axios.get('/leaderboard');
             if (data.status) {
-                const fetchedCategories = data.data || [];
+                const fetchedCategories = data.data?.categories || [];
                 setCategories(fetchedCategories);
 
                 const limitedCategories = fetchedCategories.slice(0, 3);
@@ -187,21 +187,7 @@ export default function Home() {
                     return;
                 }
 
-                const requests = limitedCategories.map((category, index) => {
-                    const params = new URLSearchParams({
-                        page: '1',
-                        per_page: '5',
-                        category_slug: category.slug,
-                    });
-                    return Axios.get(`/profiles?${params.toString()}`);
-                });
-
-                const responses = await Promise.all(requests);
-
-                const leaders = responses.map((response, index) => {
-                    const category = limitedCategories[index];
-                    const apiData = response.data;
-                    const profiles = apiData?.data?.profiles?.data || [];
+                const leaders = limitedCategories.map((category, index) => {
                     const trackLabel = `Track ${String(index + 1).padStart(2, '0')}`;
 
                     let subtitle = 'Top organizations in this category';
@@ -212,6 +198,9 @@ export default function Home() {
                     } else if (category.slug === 'ibadah-support') {
                         subtitle = 'Spiritual innovation';
                     }
+
+                    // Use profiles from the cached response, sliced to top 5
+                    const profiles = (category.profiles || []).slice(0, 5);
 
                     return {
                         slug: category.slug,
