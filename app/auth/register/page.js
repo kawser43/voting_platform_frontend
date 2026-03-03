@@ -1,10 +1,20 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useUser } from '@/context/UserContext';
 import Axios from '@/Helper/Axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Turnstile } from '@marsidev/react-turnstile';
+
+const BackgroundBlobs = memo(() => (
+    <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute bottom-0 -left-4 w-72 h-72 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+    </div>
+));
+
+BackgroundBlobs.displayName = 'BackgroundBlobs';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -76,14 +86,23 @@ export default function RegisterPage() {
         fetchSubmissionSettings();
     }, []);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const handleChange = useCallback((e) => {
+        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    }, []);
 
-    const handleTurnstileVerify = (token) => {
+    const handleTurnstileVerify = useCallback((token) => {
         setTurnstileToken(token);
         setTurnstileError(null);
-    };
+    }, []);
+
+    const handleTurnstileError = useCallback(() => {
+        setTurnstileToken('');
+        setTurnstileError('Captcha failed to load or is not allowed for this domain.');
+    }, []);
+
+    const handleTurnstileExpire = useCallback(() => {
+        setTurnstileToken('');
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -395,13 +414,8 @@ export default function RegisterPage() {
                             <Turnstile 
                                 siteKey={turnstileSiteKey} 
                                 onSuccess={handleTurnstileVerify}
-                                onError={() => {
-                                    setTurnstileToken('');
-                                    setTurnstileError('Captcha failed to load or is not allowed for this domain.');
-                                }}
-                                onExpire={() => {
-                                    setTurnstileToken('');
-                                }}
+                                onError={handleTurnstileError}
+                                onExpire={handleTurnstileExpire}
                                 options={{ theme: 'light' }}
                             />
                         </div>

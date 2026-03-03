@@ -142,13 +142,6 @@ export default function PublicProfilePage() {
                     message: data.data.voted ? 'Thank you for your vote!' : 'Your vote has been removed.',
                     type: 'success'
                 });
-
-                // Redirect to GlobalSadaqah Ramadan page if vote was submitted
-                if (data.data.voted) {
-                    setTimeout(() => {
-                        window.location.href = 'https://globalsadaqah.com/ramadan';
-                    }, 2000);
-                }
             }
         } catch (err) {
             console.error(err);
@@ -297,8 +290,28 @@ export default function PublicProfilePage() {
                 title={alertState.title}
                 message={alertState.message}
                 type={alertState.type}
-                onClose={() => setAlertState(prev => ({ ...prev, open: false }))}
+                onClose={() => {
+                    if (alertState.title === 'Vote Submitted') {
+                        setAlertState({
+                            open: true,
+                            title: 'Redirecting...',
+                            message: 'Redirecting you to our Ramadan page with useful resources...',
+                            type: 'info'
+                        });
+                        setTimeout(() => {
+                            window.location.href = 'https://globalsadaqah.com/ramadan';
+                        }, 2000);
+                    } else if (alertState.title !== 'Redirecting...') {
+                        setAlertState(prev => ({ ...prev, open: false }));
+                    }
+                }}
                 actions={
+                    alertState.title === 'Redirecting...' ? (
+                         <div className="flex flex-col items-center gap-2 py-2">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                            <p className="text-xs text-gray-500">#CirculateGood this Ramadan</p>
+                         </div>
+                    ) :
                     alertState.title === 'Register or Login to Vote'
                         ? (
                             <>
