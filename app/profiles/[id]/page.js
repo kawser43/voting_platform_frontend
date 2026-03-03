@@ -142,6 +142,13 @@ export default function PublicProfilePage() {
                     message: data.data.voted ? 'Thank you for your vote!' : 'Your vote has been removed.',
                     type: 'success'
                 });
+
+                // Redirect to GlobalSadaqah Ramadan page if vote was submitted
+                if (data.data.voted) {
+                    setTimeout(() => {
+                        window.location.href = 'https://globalsadaqah.com/ramadan';
+                    }, 2000);
+                }
             }
         } catch (err) {
             console.error(err);

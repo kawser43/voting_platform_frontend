@@ -19,6 +19,7 @@ const siteTitle = "Ma'a Impact Prize by GlobalSadaqah";
 const siteDescription =
   "Ma'a Impact Prize by GlobalSadaqah – empowering ethical startups and non-profits with $5,000 impact grants across three impact tracks.";
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://maaimpact.com";
+const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 
 export const metadata = {
   title: siteTitle,
@@ -48,7 +49,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-GBGF3MPW78"
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -56,7 +57,7 @@ export default function RootLayout({ children }) {
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-GBGF3MPW78');
+            gtag('config', '${gaId}');
           `}
         </Script>
         <Suspense fallback={<>Loading...</>}>
