@@ -143,12 +143,20 @@ export default function RegisterPage() {
             }
 
             setError(data.message || 'Registration failed');
-            setTurnstileToken('');
+            // Do not reset token on validation error to allow user to correct form without re-verifying
+            // setTurnstileToken(''); 
+            // If the error is specifically about captcha, then reset
+            if (data.message && data.message.toLowerCase().includes('captcha')) {
+                 setTurnstileToken('');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Something went wrong');
             setShowToast(true);
             setTimeout(() => setShowToast(false), 5000);
-            setTurnstileToken('');
+            // setTurnstileToken(''); // Same here, only reset if necessary or if you want to force re-verification on system error
+            if (err.response?.data?.message?.toLowerCase().includes('captcha')) {
+                setTurnstileToken('');
+            }
         } finally {
             setLoading(false);
         }
