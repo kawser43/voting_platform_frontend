@@ -762,7 +762,7 @@ export default function Home() {
                                         Final judging round
                                     </p>
                                     <p className="text-xs text-slate-600 mt-1.5">
-                                        The top 10 voted projects from each track move to the final judging round.
+                                        The top 15 voted projects from each track move to the final judging round.
                                     </p>
                                 </div>
 

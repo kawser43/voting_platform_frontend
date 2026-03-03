@@ -3,6 +3,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import ParentLayout from "@/components/Layouts/ParentLayout";
 import ProviderComponents from "@/components/Layouts/ProviderComponents";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,18 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-GBGF3MPW78"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-GBGF3MPW78');
+          `}
+        </Script>
         <Suspense fallback={<>Loading...</>}>
           <ProviderComponents>
             <ParentLayout>
