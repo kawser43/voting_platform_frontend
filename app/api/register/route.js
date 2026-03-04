@@ -59,7 +59,8 @@ export async function POST(request) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ message: 'API Connection Error' }), { status: 500 });
+    console.error('API Register Error:', error);
+    return new Response(JSON.stringify({ message: 'API Connection Error', error: error.message }), { status: 500 });
   }
 }
 
