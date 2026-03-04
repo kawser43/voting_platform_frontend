@@ -138,7 +138,8 @@ export default function Leaderboard() {
                                     <div className="p-4 space-y-0.5">
                                         {category.profiles.length > 0 ? (
                                             category.profiles.map((profile, index) => (
-                                                <div
+                                                <Link
+                                                    href={`/profiles/${profile.id}`}
                                                     key={profile.id}
                                                     className="flex items-center pr-3 py-3 rounded-xl hover:bg-indigo-50 transition-colors group border border-transparent hover:border-indigo-100 cursor-pointer"
                                                 >
@@ -194,7 +195,7 @@ export default function Leaderboard() {
                                                             Votes
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </Link>
                                             ))
                                         ) : (
                                             <div className="text-sm text-slate-500 bg-indigo-50/60 border border-dashed border-indigo-100 rounded-xl px-4 py-6 text-center">

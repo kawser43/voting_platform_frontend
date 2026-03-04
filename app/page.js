@@ -827,6 +827,14 @@ export default function Home() {
                                     Browse the highest-voted organizations across the For-Profit, Non-Profit, and Ibadah tracks.
                                 </p>
                             </div>
+                            <div>
+                                <Link
+                                    href="/leaderboard"
+                                    className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
+                                >
+                                    View More Standings
+                                </Link>
+                            </div>
                         </div>
 
                         {loading ? (
