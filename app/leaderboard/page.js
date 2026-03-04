@@ -130,7 +130,7 @@ export default function Leaderboard() {
                                                 </p>
                                             </div>
                                             <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-white text-[11px] font-semibold text-indigo-700 border border-indigo-100">
-                                                Top 5
+                                                Top 30
                                             </div>
                                         </div>
                                     </div>
