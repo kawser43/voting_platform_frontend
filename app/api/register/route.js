@@ -4,28 +4,17 @@ export async function POST(request) {
   const headerList = await headers();
   const body = await request.json();
 
-  // 1. Get real data from Cloudflare headers
-  // 'cf-connecting-ip' is the gold standard when using Cloudflare
-  const ip =
-    headerList.get('cf-connecting-ip') ||
-    headerList.get('x-forwarded-for') ||
-    headerList.get('x-real-ip') ||
-    request.ip ||
-    '127.0.0.1';
-
-  const country =
+  const countryCode =
     headerList.get('cf-ipcountry') ||
     headerList.get('cloudfront-viewer-country') ||
     headerList.get('x-country-code') ||
-    'XX';
+    null;
 
   const apiBaseUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     (process.env.NEXT_PUBLIC_API
       ? process.env.NEXT_PUBLIC_API.replace(/\/api\/?$/, '')
       : '');
-  
-  const internalSecret = process.env.INTERNAL_API_SECRET; // Set this in .env
 
   if (!apiBaseUrl) {
     return new Response(
@@ -36,31 +25,23 @@ export async function POST(request) {
 
   const url = `${apiBaseUrl.replace(/\/$/, '')}/api/register`;
 
-  try {
-    const laravelRes = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Internal-Secret': internalSecret || '', // Secret handshake
-        'X-Forwarded-For': ip,                // Forwarding for Laravel's TrustProxies
-        'CF-Connecting-IP': ip,               // Direct IP header
-        'CF-IPCountry': country,
-      },
-      body: JSON.stringify({
-        ...body,
-        country_code: country, // Pass country directly into the payload
-      }),
-    });
+  const laravelRes = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'CF-IPCountry': countryCode || '',
+    },
+    body: JSON.stringify({
+      ...body,
+      country_code: countryCode || body.country_code || null,
+    }),
+  });
 
-    const result = await laravelRes.json();
-    return new Response(JSON.stringify(result), {
-      status: laravelRes.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('API Register Error:', error);
-    return new Response(JSON.stringify({ message: 'API Connection Error', error: error.message }), { status: 500 });
-  }
+  const result = await laravelRes.json();
+  return new Response(JSON.stringify(result), {
+    status: laravelRes.status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
