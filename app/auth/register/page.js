@@ -141,7 +141,15 @@ export default function RegisterPage() {
                 website: '', // Honeypot field should be empty
                 is_webdriver: isWebDriver
             }
-            const { data } = await Axios.post('/register', payload);
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
 
             if (data.status) {
                 const token = data.data?.access_token;
@@ -169,11 +177,11 @@ export default function RegisterPage() {
                  setTurnstileToken('');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Something went wrong');
+            setError('Something went wrong');
             setShowToast(true);
             setTimeout(() => setShowToast(false), 5000);
             // setTurnstileToken(''); // Same here, only reset if necessary or if you want to force re-verification on system error
-            if (err.response?.data?.message?.toLowerCase().includes('captcha')) {
+            if ((err?.message || '').toLowerCase().includes('captcha')) {
                 setTurnstileToken('');
             }
         } finally {
