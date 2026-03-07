@@ -11,6 +11,7 @@ export default function AdminEmailPage() {
   const router = useRouter();
 
   const [audience, setAudience] = useState('all');
+  const [customEmails, setCustomEmails] = useState('');
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
   const [, setContentLen] = useState(0);
@@ -34,7 +35,9 @@ export default function AdminEmailPage() {
     }
   }, [isLoggedIn, user, router]);
 
-  const canSend = subject.trim().length > 0 && content.trim().length > 0 && (!testMode || testEmail.trim().length > 0);
+  const canSend = subject.trim().length > 0 && content.trim().length > 0 && 
+    (!testMode || testEmail.trim().length > 0) &&
+    (audience !== 'custom_list' || customEmails.trim().length > 0);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -47,6 +50,7 @@ export default function AdminEmailPage() {
         content,
         test_mode: testMode ? 1 : 0,
         ...(testMode ? { test_email: testEmail } : {}),
+        ...(audience === 'custom_list' ? { custom_emails: customEmails } : {}),
       };
       const { data } = await Axios.post('/admin/broadcast-email', payload);
       if (data.status) {
@@ -98,12 +102,13 @@ export default function AdminEmailPage() {
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             >
-              <option value="all">All users</option>
-              <option value="submitter">Submitter</option>
-              <option value="voter">Voter</option>
-              <option value="approved_profile">Approved Profile Users</option>
+              <option value="all">All Users</option>
+              <option value="submitter">Submitters Only</option>
+              <option value="voter">Voters Only</option>
+              <option value="approved_profile">Approved Profiles</option>
+              <option value="custom_list">Custom Email List</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -117,6 +122,19 @@ export default function AdminEmailPage() {
               <span className="text-sm text-gray-700">Test Email</span>
             </label>
           </div>
+          {audience === 'custom_list' && (
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Custom Email List</label>
+              <input
+                type="text"
+                value={customEmails}
+                onChange={(e) => setCustomEmails(e.target.value)}
+                placeholder="email1@example.com, email2@example.com"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">Separate multiple emails with commas.</p>
+            </div>
+          )}
         </div>
 
         {testMode && (
