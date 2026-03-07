@@ -89,6 +89,40 @@ export default function CategoriesPage() {
         }
     };
 
+    const handleExport = async (category) => {
+        setActionLoading(category.id);
+        try {
+            const response = await Axios.get(`/admin/categories/${category.id}/export`, {
+                responseType: 'blob',
+            });
+            
+            // Create download link
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Extract filename from content-disposition header if possible
+            const contentDisposition = response.headers['content-disposition'];
+            let fileName = `leaderboard_${category.slug || category.name.replace(/\s+/g, '_').toLowerCase()}.csv`;
+            
+            if (contentDisposition) {
+                const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (fileNameMatch && fileNameMatch.length === 2)
+                    fileName = fileNameMatch[1];
+            }
+
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (err) {
+            console.error("Error exporting leaderboard", err);
+            setAlertModal({ open: true, title: 'Error', message: 'Failed to export leaderboard', type: 'error' });
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const handleDeleteCategory = (id) => {
         setConfirmModal({
             open: true,
@@ -187,6 +221,17 @@ export default function CategoriesPage() {
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">
+                                        <button
+                                            onClick={() => handleExport(category)}
+                                            disabled={actionLoading === category.id}
+                                            className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-1"
+                                            title="Export Top 30 Leaderboard"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            {actionLoading === category.id ? '...' : 'Export'}
+                                        </button>
                                         <button
                                             onClick={() => setEditModal({ open: true, id: category.id, data: { name: category.name, is_active: category.is_active } })}
                                             className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
