@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/context/UserContext';
 import Link from 'next/link';
 import AlertModal from '@/components/AlertModal';
+import VotingClosedModal from '@/components/VotingClosedModal';
 
 const VOTING_START_DATE = process.env.NEXT_PUBLIC_VOTING_START_DATE;
 const VOTING_END_DATE = process.env.NEXT_PUBLIC_VOTING_END_DATE;
@@ -25,6 +26,7 @@ export default function PublicProfilePage() {
     });
     const [votePulse, setVotePulse] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
+    const [showClosedModal, setShowClosedModal] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -81,21 +83,16 @@ export default function PublicProfilePage() {
             year: 'numeric'
         });
 
+        if (now >= votingEndExclusive || now > new Date(VOTING_END_DATE)) {
+            setShowClosedModal(true);
+            return;
+        }
+
         if (now < votingStart) {
             setAlertState({
                 open: true,
                 title: 'Voting Not Started',
                 message: `Voting will start on ${startLabel}.`,
-                type: 'info'
-            });
-            return;
-        }
-
-        if (now >= votingEndExclusive) {
-            setAlertState({
-                open: true,
-                title: 'Voting Ended',
-                message: 'Voting has ended.',
                 type: 'info'
             });
             return;
@@ -146,12 +143,17 @@ export default function PublicProfilePage() {
         } catch (err) {
             console.error(err);
             const msg = err.response?.data?.message || 'Failed to process vote';
-            setAlertState({
-                open: true,
-                title: 'Error',
-                message: msg,
-                type: 'error'
-            });
+            
+            if (msg.includes("Voting period has ended") || msg.includes("Voting ended")) {
+                setShowClosedModal(true);
+            } else {
+                setAlertState({
+                    open: true,
+                    title: 'Error',
+                    message: msg,
+                    type: 'error'
+                });
+            }
         } finally {
             setVoteLoading(false);
         }
@@ -338,6 +340,11 @@ export default function PublicProfilePage() {
                         : undefined
                 }
             />
+            
+            <VotingClosedModal 
+                isOpen={showClosedModal} 
+                onClose={() => setShowClosedModal(false)} 
+            />
 
             {/* Hero Section */}
             <div className="relative bg-indigo-700 h-64 lg:h-80 overflow-hidden">
@@ -404,7 +411,15 @@ export default function PublicProfilePage() {
                                             <path d="M9 9l3-6 3 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     )}
-                                    {user?.account_type === 'submitter' ? 'Competitor cannot vote' : (voteLoading ? 'Processing...' : (profile.is_voted ? 'Voted' : 'Vote Now'))}
+                                    {user?.account_type === 'submitter' 
+                                        ? 'Competitor cannot vote' 
+                                        : (voteLoading 
+                                            ? 'Processing...' 
+                                            : (profile.is_voted 
+                                                ? 'Voted' 
+                                                : (new Date() >= new Date(process.env.NEXT_PUBLIC_VOTING_END_DATE) 
+                                                    ? 'Vote Closed' 
+                                                    : 'Vote Now')))}
                                 </button>
                                 
                                 {user?.account_type === 'submitter' && (
