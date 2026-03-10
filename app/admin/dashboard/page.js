@@ -82,6 +82,7 @@ export default function AdminDashboard() {
     const [addSubmitting, setAddSubmitting] = useState(false);
     const [countries, setCountries] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [winnerPlacement, setWinnerPlacement] = useState({});
 
     // Redirect if not admin
     useEffect(() => {
@@ -150,6 +151,10 @@ export default function AdminDashboard() {
             if (data.status) {
                 const paginated = data.data;
                 setProfiles(paginated.data || []);
+                setWinnerPlacement((paginated.data || []).reduce((acc, p) => {
+                    acc[p.id] = p.winner_place ?? '';
+                    return acc;
+                }, {}));
                 setPage(paginated.current_page || 1);
                 setLastPage(paginated.last_page || 1);
             }
@@ -158,6 +163,50 @@ export default function AdminDashboard() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSaveWinner = (profileId) => {
+        const placeValue = winnerPlacement[profileId];
+        const winner_place = placeValue === '' ? null : Number(placeValue);
+
+        setConfirmModal({
+            open: true,
+            title: 'Set Winner Placement',
+            message: winner_place ? `Mark this profile as winner place #${winner_place}?` : 'Clear winner placement for this profile?',
+            confirmColor: 'indigo',
+            onConfirm: async () => {
+                setActionLoading(`winner-${profileId}`);
+                try {
+                    const { data } = await Axios.post(`/admin/profiles/${profileId}/winner`, { winner_place });
+                    if (data.status) {
+                        fetchProfiles();
+                        setAlertState({
+                            open: true,
+                            title: 'Winner Updated',
+                            message: 'Winner placement has been updated successfully.',
+                            type: 'success'
+                        });
+                    } else {
+                        setAlertState({
+                            open: true,
+                            title: 'Update Failed',
+                            message: data.message || 'Failed to update winner placement',
+                            type: 'error'
+                        });
+                    }
+                } catch (err) {
+                    setAlertState({
+                        open: true,
+                        title: 'Update Failed',
+                        message: err.response?.data?.message || 'Failed to update winner placement',
+                        type: 'error'
+                    });
+                } finally {
+                    setActionLoading(null);
+                    setConfirmModal(prev => ({ ...prev, open: false }));
+                }
+            }
+        });
     };
 
     useEffect(() => {
@@ -603,6 +652,28 @@ export default function AdminDashboard() {
                                         )}
                                         {profile.status === 'approved' && (
                                             <>
+                                                <div className="flex items-center space-x-2">
+                                                    <select
+                                                        value={winnerPlacement[profile.id] ?? ''}
+                                                        onChange={(e) => setWinnerPlacement(prev => ({ ...prev, [profile.id]: e.target.value }))}
+                                                        className="px-2 py-1.5 rounded-md text-sm border border-gray-300 bg-white focus:ring-indigo-500 focus:border-indigo-500"
+                                                        title="Winner placement"
+                                                    >
+                                                        <option value="">No Winner</option>
+                                                        <option value="1">Winner #1</option>
+                                                        <option value="2">Winner #2</option>
+                                                        <option value="3">Winner #3</option>
+                                                        <option value="4">Winner #4</option>
+                                                        <option value="5">Winner #5</option>
+                                                    </select>
+                                                    <button
+                                                        onClick={() => handleSaveWinner(profile.id)}
+                                                        disabled={actionLoading === `winner-${profile.id}`}
+                                                        className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                                                    >
+                                                        {actionLoading === `winner-${profile.id}` ? 'Saving...' : 'Save'}
+                                                    </button>
+                                                </div>
                                                 <button
                                                     onClick={() => openEditModal(profile)}
                                                     className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
