@@ -66,8 +66,6 @@ export default function Home() {
     const [loadingJudges, setLoadingJudges] = useState(true);
     const [partners, setPartners] = useState([]);
     const [loadingPartners, setLoadingPartners] = useState(true);
-    const [categories, setCategories] = useState([]);
-    const [categoryLeaderboards, setCategoryLeaderboards] = useState([]);
     const [voteStatus, setVoteStatus] = useState({
         loading: false,
         hasVoted: false,
@@ -173,56 +171,10 @@ export default function Home() {
         }
     };
 
-    const fetchCategoryLeaderboards = async () => {
-        try {
-            const { data } = await Axios.get('/leaderboard');
-            if (data.status) {
-                const fetchedCategories = data.data?.categories || [];
-                setCategories(fetchedCategories);
-
-                const limitedCategories = fetchedCategories.slice(0, 3);
-
-                if (limitedCategories.length === 0) {
-                    setCategoryLeaderboards([]);
-                    return;
-                }
-
-                const leaders = limitedCategories.map((category, index) => {
-                    const trackLabel = `Track ${String(index + 1).padStart(2, '0')}`;
-
-                    let subtitle = 'Top organizations in this category';
-                    if (category.slug === 'for-profit') {
-                        subtitle = 'Ethical Startup';
-                    } else if (category.slug === 'non-profit-organisation') {
-                        subtitle = 'Pure service';
-                    } else if (category.slug === 'ibadah-support') {
-                        subtitle = 'Spiritual innovation';
-                    }
-
-                    // Use profiles from the cached response, sliced to top 5
-                    const profiles = (category.profiles || []).slice(0, 5);
-
-                    return {
-                        slug: category.slug,
-                        title: category.name,
-                        trackLabel,
-                        subtitle,
-                        profiles,
-                    };
-                });
-
-                setCategoryLeaderboards(leaders);
-            }
-        } catch (err) {
-            console.error('Error fetching category leaderboards', err);
-        }
-    };
-
     useEffect(() => {
         fetchProfiles();
         fetchJudges();
         fetchPartners();
-        fetchCategoryLeaderboards();
     }, []);
 
     useEffect(() => {
@@ -812,164 +764,34 @@ export default function Home() {
 
                 <section className="py-10 md:py-16 bg-gray-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-                            <div className="space-y-2">
-                                <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                                    <span className="tracking-[0.18em] uppercase">
-                                        Top organizations
-                                    </span>
+                        <div className="bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden">
+                            <div className="p-6 md:p-8 bg-gradient-to-r from-indigo-50 to-white">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                                    <div className="space-y-2">
+                                        <div className="inline-flex items-center gap-2 rounded-full bg-indigo-100/70 px-3 py-1 text-[11px] font-semibold text-indigo-700">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                                            <span className="tracking-[0.18em] uppercase">
+                                                Announcement
+                                            </span>
+                                        </div>
+                                        <h2 className="text-2xl md:text-3xl font-bold text-indigo-900">
+                                            Winners have been announced
+                                        </h2>
+                                        <p className="text-slate-700 text-sm md:text-base max-w-2xl">
+                                            View the top winners for each category.
+                                        </p>
+                                    </div>
+                                    <div className="flex-shrink-0">
+                                        <Link
+                                            href="/leaderboard"
+                                            className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
+                                        >
+                                            See Winners
+                                        </Link>
+                                    </div>
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-indigo-900">
-                                    See the leaders in each track
-                                </h2>
-                                <p className="text-slate-700 text-sm md:text-base max-w-2xl">
-                                    Browse the highest-voted organizations across the For-Profit, Non-Profit, and Ibadah tracks.
-                                </p>
-                            </div>
-                            <div>
-                                <Link
-                                    href="/leaderboard"
-                                    className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
-                                >
-                                    View More Standings
-                                </Link>
                             </div>
                         </div>
-
-                        {loading ? (
-                            <div className="grid gap-6 md:grid-cols-3">
-                                {[0, 1, 2].map(index => (
-                                    <div
-                                        key={index}
-                                        className="bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden"
-                                    >
-                                        <div className="p-5 border-b border-indigo-50 bg-gradient-to-r from-indigo-50 to-white">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <div className="h-3 w-24 bg-indigo-100 rounded-full mb-2" />
-                                                    <div className="h-4 w-32 bg-indigo-50 rounded-full" />
-                                                </div>
-                                                <div className="h-6 w-20 bg-indigo-50 rounded-full" />
-                                            </div>
-                                        </div>
-                                        <div className="p-4 space-y-1.5">
-                                            {[0, 1, 2, 3, 4].map(item => (
-                                                <div
-                                                    key={item}
-                                                    className="flex items-center pr-3 py-3 rounded-xl border border-transparent"
-                                                >
-                                                    <div className="w-8 h-4 bg-indigo-50 rounded-full mr-3" />
-                                                    <div className="relative w-10 h-10 flex-shrink-0 mr-4">
-                                                        <div className="w-full h-full bg-indigo-50 rounded-full" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="h-3 w-32 bg-indigo-50 rounded-full mb-1" />
-                                                        <div className="h-2 w-20 bg-indigo-100 rounded-full" />
-                                                    </div>
-                                                    <div className="w-10 h-4 bg-indigo-50 rounded-full ml-3" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="grid gap-6 md:grid-cols-3">
-                                {categoryLeaderboards.map(category => (
-                                    <div
-                                        key={category.slug}
-                                        className="bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden"
-                                    >
-                                        <div className="p-5 border-b border-indigo-50 bg-gradient-to-r from-indigo-50 to-white">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-[0.18em]">
-                                                        {category.trackLabel}
-                                                    </p>
-                                                    <h3 className="text-lg font-semibold text-indigo-900 flex items-center gap-2">
-                                                        <span>{category.title}</span>
-                                                    </h3>
-                                                    <p className="text-xs font-semibold text-indigo-700 mt-1">
-                                                        {category.subtitle}
-                                                    </p>
-                                                </div>
-                                                <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-white text-[11px] font-semibold text-indigo-700 border border-indigo-100">
-                                                    Top 5
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-4 space-y-0.5">
-                                            {category.profiles.length > 0 ? (
-                                                category.profiles.map((profile, index) => (
-                                                    <div
-                                                        key={profile.id}
-                                                        className="flex items-center pr-3 py-3 rounded-xl hover:bg-indigo-50 transition-colors group border border-transparent hover:border-indigo-100 cursor-pointer"
-                                                    >
-                                                        <div
-                                                            className={`font-bold w-8 text-lg mr-2 ${index === 0
-                                                                ? 'text-yellow-500'
-                                                                : index === 1
-                                                                    ? 'text-gray-400'
-                                                                    : index === 2
-                                                                        ? 'text-amber-600'
-                                                                        : 'text-indigo-300'
-                                                                }`}
-                                                        >
-                                                            #{String(index + 1).padStart(2, '0')}
-                                                        </div>
-
-                                                        <div className="relative w-10 h-10 flex-shrink-0 mr-4">
-                                                            {profile.logo_url ? (
-                                                                <img
-                                                                    src={profile.logo_url}
-                                                                    alt={profile.organization_name}
-                                                                    className="w-full h-full object-cover rounded-full border-2 border-indigo-100 group-hover:border-indigo-200 shadow-sm"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-indigo-100 rounded-full flex items-center justify-center text-indigo-500 font-bold border-2 border-indigo-50 text-sm">
-                                                                    {profile.organization_name?.charAt(0).toUpperCase() || '?'}
-                                                                </div>
-                                                            )}
-                                                            {index === 0 && (
-                                                                <div className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[9px] px-1.5 py-0.5 rounded-full shadow-sm border border-white">
-                                                                    Top
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-semibold text-indigo-900 truncate">
-                                                                {profile.organization_name}
-                                                            </p>
-                                                            {profile.country && (
-                                                                <p className="text-[11px] text-indigo-500 truncate">
-                                                                    {profile.country}
-                                                                </p>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="text-right pl-3">
-                                                            <div className="font-bold text-indigo-600 text-xl leading-none">
-                                                                {profile.votes_count || 0}
-                                                            </div>
-                                                            <div className="text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-1">
-                                                                Votes
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="text-sm text-slate-500 bg-indigo-50/60 border border-dashed border-indigo-100 rounded-xl px-4 py-6 text-center">
-                                                    No organizations in this track yet.
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </section>
 
