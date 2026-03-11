@@ -129,7 +129,9 @@ export default function PublicProfilePage() {
                 setProfile(prev => ({
                     ...prev,
                     is_voted: data.data.voted,
-                    votes_count: data.data.voted ? prev.votes_count + 1 : prev.votes_count - 1
+                    votes_count: typeof prev.votes_count === 'number'
+                        ? (data.data.voted ? prev.votes_count + 1 : prev.votes_count - 1)
+                        : prev.votes_count
                 }));
                 setVotePulse(true);
                 setTimeout(() => setVotePulse(false), 700);
@@ -425,11 +427,6 @@ export default function PublicProfilePage() {
                                 {user?.account_type === 'submitter' && (
                                     <p className="text-xs text-gray-500 text-center">Submitter accounts cannot vote.</p>
                                 )}
-                                
-                                {/* <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100 text-center">
-                                    <span className="block text-3xl font-bold text-indigo-600 mb-1">{profile.votes_count}</span>
-                                    <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Votes</span>
-                                </div> */}
                             </div>
 
                             <div className="space-y-4">

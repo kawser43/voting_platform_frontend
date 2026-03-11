@@ -1,7 +1,4 @@
 'use client';
-import { useState, useEffect } from 'react';
-
-const VOTING_END_DATE = process.env.NEXT_PUBLIC_VOTING_END_DATE;
 
 export default function VotingClosedModal({ isOpen, onClose }) {
     if (!isOpen) return null;
@@ -14,7 +11,6 @@ export default function VotingClosedModal({ isOpen, onClose }) {
             ></div>
             
             <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100 animate-slideUp">
-                {/* Header with gradient */}
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-8 text-center relative overflow-hidden">
                     <div className="absolute inset-0 opacity-10 pattern-dots"></div>
                     <div className="mx-auto w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-3">
@@ -27,7 +23,7 @@ export default function VotingClosedModal({ isOpen, onClose }) {
 
                 <div className="p-8 text-center">
                     <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-                        Thank you for your participation! The voting period for the <span className="font-semibold text-indigo-600">Ma'a Impact Prize</span> has officially ended.
+                        Thank you for your participation! The voting period for the <span className="font-semibold text-indigo-600">Ma&apos;a Impact Prize</span> has officially ended.
                     </p>
                     
                     <button

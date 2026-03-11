@@ -6,8 +6,7 @@ import Axios from '@/Helper/Axios';
 
 export default function HeroSection({ profiles }) {
     const { isLoggedIn } = useUser();
-    // Sort profiles by votes (descending) and take top 5
-    const topProfiles = profiles ? [...profiles].sort((a, b) => b.votes_count - a.votes_count).slice(0, 5) : [];
+    const topProfiles = profiles ? [...profiles].slice(0, 5) : [];
     
     const [heroContent, setHeroContent] = useState({
         hero_title: 'Vote for Your <br class="hidden lg:block" /> <span class="text-indigo-600">Favorite Organization</span>',
@@ -125,14 +124,6 @@ export default function HeroSection({ profiles }) {
                                                 </h3>
                                             </div>
                                             
-                                            <div className="text-right pl-3">
-                                                <div className="font-bold text-indigo-600 text-2xl leading-none">
-                                                    {profile.votes_count || 0}
-                                                </div>
-                                                <div className="text-[10px] text-indigo-400 uppercase tracking-wide font-semibold mt-1">
-                                                    Votes
-                                                </div>
-                                            </div>
                                         </div>
                                     ))
                                 ) : (

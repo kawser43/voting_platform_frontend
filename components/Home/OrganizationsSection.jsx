@@ -133,14 +133,6 @@ export default function OrganizationsSection({
                                             </svg>
                                         </div>
                                     )}
-                                    {/* <div className="absolute top-4 right-4 bg-indigo-900/95 px-3.5 py-1.5 rounded-full shadow-lg border border-indigo-500/70 flex items-baseline gap-1.5">
-                                        <span className="text-[10px] font-semibold tracking-[0.16em] uppercase text-indigo-200">
-                                            Votes
-                                        </span>
-                                        <span className="text-sm font-extrabold text-white leading-none">
-                                            {profile.votes_count}
-                                        </span>
-                                    </div> */}
                                 </div>
 
                                 {/* Content */}
