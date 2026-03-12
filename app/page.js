@@ -783,7 +783,7 @@ export default function Home() {
                                     </div>
                                     <div className="flex-shrink-0">
                                         <Link
-                                            href="/leaderboard"
+                                            href="/winners"
                                             className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-indigo-600 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition-colors"
                                         >
                                             See Winners

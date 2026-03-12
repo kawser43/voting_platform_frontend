@@ -354,14 +354,14 @@ export default function PublicProfilePage() {
                 <div className="absolute inset-0 opacity-20 bg-[url('/pattern.svg')]"></div>
                 
                 {/* Back Button */}
-                <div className="absolute top-8 left-4 sm:left-8 z-10">
-                    <Link href="/leaderboard" className="inline-flex items-center px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition-colors text-sm font-medium border border-white/20">
+                {/* <div className="absolute top-8 left-4 sm:left-8 z-10">
+                    <Link href="/winners" className="inline-flex items-center px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition-colors text-sm font-medium border border-white/20">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Back to Leaderboard
                     </Link>
-                </div>
+                </div> */}
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10">

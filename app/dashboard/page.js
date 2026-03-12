@@ -96,8 +96,8 @@ export default function DashboardPage() {
                             </p>
                         </div>
                         <div className="mt-4 flex md:mt-0 md:ml-4">
-                            <Link href="/leaderboard" className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                View Leaderboard
+                            <Link href="/winners" className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                View Winners
                             </Link>
                         </div>
                     </div>
@@ -133,8 +133,8 @@ export default function DashboardPage() {
                                             Voter accounts cannot submit organization profiles. You can support organizations by voting on their public profiles.
                                         </p>
                                         <div className="mt-6">
-                                            <Link href="/leaderboard" className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                Browse Organizations
+                                            <Link href="/winners" className="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                View Winners
                                             </Link>
                                         </div>
                                     </div>

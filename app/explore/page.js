@@ -92,10 +92,10 @@ export default function ExploreOrganizationsPage() {
                                 Explore organizations
                             </button>
                             <Link
-                                href="/leaderboard"
+                                href="/winners"
                                 className="inline-flex items-center justify-center gap-2 text-[15px] px-4 py-2 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-300 font-semibold shadow-md hover:bg-indigo-100 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                             >
-                                <span>View leaderboard</span>
+                                <span>View Winners</span>
                                 <span>→</span>
                             </Link>
                         </div>

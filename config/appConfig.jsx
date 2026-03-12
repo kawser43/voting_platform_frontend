@@ -14,7 +14,7 @@ const appConfig = Object.freeze({
     ],
     guestPaths: [
         '/',
-        '/leaderboard',
+        '/winners',
         '/profiles',
         '/faq',
         '/why-join-us',

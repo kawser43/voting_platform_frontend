@@ -64,7 +64,7 @@ export default function HeroSection({ profiles }) {
                                 {heroContent.hero_button_text}
                             </Link>
                             <Link 
-                                href="/leaderboard" 
+                                href="/winners" 
                                 className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-300 font-semibold shadow-md hover:bg-indigo-100 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
                             >
                                 <span>{heroContent.hero_button_2_text}</span>
@@ -81,7 +81,7 @@ export default function HeroSection({ profiles }) {
                                     <span className="text-2xl">🏆</span> Top Organizations
                                 </h2>
                                 <Link 
-                                    href="/leaderboard" 
+                                    href="/winners" 
                                     className="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
                                 >
                                     View All <span>→</span>
