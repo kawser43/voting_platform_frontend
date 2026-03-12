@@ -3,7 +3,7 @@ import Axios from '@/Helper/Axios';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-export default function Leaderboard() {
+export default function Winners() {
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState([]);
     const [categoryLeaderboards, setCategoryLeaderboards] = useState([]);
